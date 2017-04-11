@@ -1,0 +1,497 @@
+/**
+ * 
+ */
+package model;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import data.reader.DBDataHandler;
+import gui.MainFrame;
+import tree.components.TableComponent;
+
+/**
+ * Klasa koja modeluje tabelu u bazi.
+ * 
+ * @author Jasmina
+ *
+ */
+public class TableModel1 {
+
+	/**
+	 * Polje koje modeluje labelu odnosno naziv tabele koji ce se lokalizovati.
+	 */
+	private String label;
+
+	/**
+	 * Jedinstveni naziv tabele.
+	 */
+	private String code;
+
+	/**
+	 * Lista {@link java.util.String String} vrednosti kodova kolona koje su
+	 * primarni kljucevi.
+	 * 
+	 */
+	private ArrayList<String> primaryKeys;
+
+	/**
+	 * Mapa sa poljima tabele(kolonama). Kljuc je kod kolone koji jedinstven na
+	 * nivou baze a vrednost model kolone.
+	 */
+	private HashMap<String, TableFieldModel> fields;
+
+	private ArrayList<TableFieldModel> polja;
+	/**
+	 * Mapa sa redovima u koloni.
+	 */
+	private ArrayList<TableRowModel> rows;
+
+	/**
+	 * Mapa tabela koje su podredjene za trenutnu tabelu. Kljuc je kod tabele
+	 * koja je podredjena(child). Vrednost je model child tabele.
+	 */
+	private HashMap<String, TableModel1> children; // --> zbog promocije
+
+	/**
+	 * Mapa tabela koje su nadredjene za trenutnu tabelu. Kljuc je kod tabele
+	 * koja je nadredjena(parent). Vrednost je model parent tabele.
+	 */
+	private HashMap<String, TableModel1> parents; // --> zbog promocije
+
+	/**
+	 * Mapa koja cuva kao kljuc kod tabele koja child. Value je lista kodova
+	 * kolona po kojima je child.
+	 */
+	private HashMap<String, ArrayList<String>> childrenList;
+
+	/**
+	 * Lista kodova tabela koje su podredjene, koje su child.
+	 */
+	private ArrayList<String> kodoviDece;
+
+	/**
+	 * Polje koje govori da li je tabela nekom nadredjena.
+	 */
+	boolean isParent; // da li je ova tabela nekom parent- zbog promocije
+
+	/**
+	 * Cvor u stablu koji je veza sa modelom.
+	 */
+	private TableComponent tableComponent; // veza sa konkretnim cvorom
+
+	private String pomocniNaziv;
+
+	public TableModel1() {
+
+	}
+
+	public TableModel1(String tableLabel, String tableCode) {
+		label = tableLabel;
+		code = tableCode;
+		fields = new HashMap<String, TableFieldModel>();
+		children = new HashMap<String, TableModel1>();
+		primaryKeys = new ArrayList<String>();
+		childrenList = new HashMap<String, ArrayList<String>>();
+		kodoviDece = new ArrayList<String>();
+		parents = new HashMap<String, TableModel1>();
+		rows = new ArrayList<TableRowModel>();
+		polja = new ArrayList<TableFieldModel>();
+	}
+
+	/**
+	 * Metoda koja dodaje kod tabele koja je child(podredjena) u odgovarajucu
+	 * kolekciju.
+	 * 
+	 * @param s
+	 *            - kod tabele.
+	 */
+	public void addKodDeteta(String s) {
+		kodoviDece.add(s);
+	}
+
+	/**
+	 * Metoda koja dodaje model kolone u odgovarajucu kolekciju.
+	 * 
+	 * @param field
+	 *            - model kolone koja se dodaje.
+	 */
+	public void addField(TableFieldModel field) {
+		fields.put(field.getCode(), field);
+	}
+
+	/********* AAAAA *******/
+	public void dodajPolje(TableFieldModel polje) {
+		polja.add(polje);
+	}
+
+	/**
+	 * Metoda koja dobavlja model kolone prema njenom kodu.
+	 * 
+	 * @param code
+	 *            - kod kolone koja se trazi.
+	 * @return - model kolone sa odgovarajucim kodom.
+	 */
+	public TableFieldModel getFieldByCode(String code) {
+		return fields.get(code);
+	}
+
+	/**
+	 * Metoda koja dodaje model podredjene tabele u odgovarajucu kolekciju.
+	 * 
+	 * @param child
+	 *            - model tabele koja je podredjena(child).
+	 */
+	public void addChild(TableModel1 child) {
+		children.put(child.getCode(), child);
+	}
+
+	/**
+	 * Metoda koja dobavlja model podredjene tabele prema njenom kodu.
+	 * 
+	 * @param code
+	 *            - kod po kojem se trazi.
+	 * @return - model tabele koja je podredjena sa odgovarajucim kodom.
+	 */
+	public TableModel1 getChildByCode(String code) {
+		return children.get(code);
+	}
+
+	/**
+	 * Dodavanje kolona za vezu parent-child.
+	 * 
+	 * @param code
+	 * @param list
+	 */
+	public void addChildToList(String code, ArrayList<String> list) {
+		childrenList.put(code, list);
+	}
+
+	/**
+	 * Dobavljanje kolona prema kojima se realizuje veza parent-child.
+	 * 
+	 * @param code
+	 * @return
+	 */
+	public ArrayList<String> getChilFromList(String code) {
+		return childrenList.get(code);
+	}
+
+	/**
+	 * Dodavanje nadredjene tabele.
+	 * 
+	 * @param parent
+	 *            - model nadredjene tabele(parenta).
+	 */
+	public void addParent(TableModel1 parent) {
+		parents.put(parent.getCode(), parent);
+	}
+
+	/**
+	 * Metoda koja dobavlja nazive svih polja- kolona jedne tabele.
+	 * 
+	 * @return {@link java.util.ArrayList ArrayList} kolekcija naziva kolona.
+	 */
+	public ArrayList<String> getFieldNames() {
+		ArrayList<String> fieldNames = new ArrayList<>();
+		for (int i = 0; i < polja.size(); i++) {
+			fieldNames.add(polja.get(i).getCode());
+		}
+		return fieldNames;
+	}
+
+	/**
+	 * Metoda koja dobavlja kodove svih polja- kolona jedne tabele.
+	 * 
+	 * @return {@link java.util.ArrayList ArrayList} kolekcija kodova kolona.
+	 */
+	public ArrayList<String> getFieldCodes() {
+		ArrayList<String> fieldCodes = new ArrayList<>();
+		for (TableFieldModel field : this.fields.values()) {
+			fieldCodes.add(field.getCode());
+		}
+
+		return fieldCodes;
+	}
+
+	/**
+	 * Metoda koja dobavlja kolekciju modela kolona koje su strani kljucevi u
+	 * datoj tabeli.
+	 * 
+	 * @return - {@link java.util.ArrayList ArrayList} kolekcija modela
+	 *         kolona(polja).
+	 */
+	public ArrayList<TableFieldModel> getForeignKeys() {
+		ArrayList<TableFieldModel> foreignKeyColumns = new ArrayList<TableFieldModel>();
+		for (TableFieldModel field : this.fields.values()) {
+			if (field.isForeignKey()) {
+				foreignKeyColumns.add(field);
+			}
+		}
+
+		return foreignKeyColumns;
+	}
+
+	/**
+	 * Metoda koja dobavlja nazive polja koja su kljucna.
+	 * 
+	 * @return - lista naziva kljucnih polja za tabelu.
+	 */
+	public ArrayList<String> getKeyNames() {
+		ArrayList<String> keyNames = new ArrayList<>();
+
+		for (String keyCode : primaryKeys) {
+			for (TableFieldModel field : fields.values()) {
+				if (field.getCode().equals(keyCode)) {
+					keyNames.add(field.getLabel());
+				}
+			}
+		}
+
+		return keyNames;
+	}
+
+	/**
+	 * Metoda koja u kolekciji polja tabele, na osnovu prosledjenog koda polja
+	 * pronalazi njegov naziv.
+	 * 
+	 * @param code
+	 *            - kod polja(kolone).
+	 * @return - naziv polja(kolone).
+	 */
+	public String getFieldNameFromCode(String code) {
+		String retName = "";
+
+		for (TableFieldModel field : fields.values()) {
+			if (field.getCode().equals(code)) {
+				retName = field.getLabel();
+			}
+		}
+		return retName;
+	}
+
+	/**
+	 * Metoda koja u kolekciji polja tabele, na osnovu prosledjenog naziva polja
+	 * pronalazi njegov kod.
+	 * 
+	 * @param code
+	 *            - naziv polja(kolone).
+	 * @return - kod polja(kolone).
+	 */
+	public String getFieldCodeFromName(String name) {
+		String kod = "";
+
+		for (TableFieldModel field : fields.values()) {
+			if (field.getLabel().equals(name)) {
+				kod = field.getCode();
+			}
+		}
+		return kod;
+	}
+
+	/**
+	 * Metoda koja izlistava sva polja tabela na osnovu naziva koji su
+	 * prosledjeni.
+	 * 
+	 * @param fieldNames
+	 *            - nazivi kolona
+	 * @return - kolekcija kolona sa identicnim nazivima.
+	 */
+	public ArrayList<TableFieldModel> getFieldsByNames(ArrayList<String> fieldNames) {
+		ArrayList<TableFieldModel> requieredFields;
+
+		requieredFields = new ArrayList<TableFieldModel>();
+
+		for (String name : fieldNames) {
+			for (TableFieldModel field : this.fields.values()) {
+				if (name.equals(field.getLabel())) {
+					requieredFields.add(field);
+				}
+			}
+		}
+
+		return requieredFields;
+	}
+
+	/**
+	 * Metoda koja za selektovani red u tabeli parenta vraca kolekciju redova iz
+	 * child tabele.
+	 * 
+	 * @param parent
+	 *            - model nadredjene parent table.
+	 * @param selectedRow
+	 *            - selektovani red u tabeli.
+	 * @return - lista filtriranih redova.
+	 */
+	public ArrayList<TableRowModel> getFilteredChildForSelectedParent(TableModel1 parent, TableRowModel selectedRow) {
+		ArrayList<TableRowModel> filtered = new ArrayList<>();
+		DBDataHandler dbDataHandler = MainFrame.getInstance().getDbDataHandler();
+		TableRowModel equalsFilters = new TableRowModel();
+		TableRowModel parentFilterWithCodes = transformNamesToCodes(parent, selectedRow);
+		String parentFieldCode = "";
+		String value = "";
+
+		for (TableFieldModel field : this.fields.values()) {
+			if (field.isForeignKeyFromTable(parent)) {
+				parentFieldCode = field.getFieldCodeFromParent(parent);
+				value = parentFilterWithCodes.getValue(parentFieldCode);
+				equalsFilters.addPair(field.getLabel(), value);
+			}
+		}
+
+		filtered = dbDataHandler.getFilteredTable(parent, equalsFilters, null, null, true);
+
+		return filtered;
+	}
+
+	/**
+	 * Pomocna metoda koja u redu umesto naziva ubacuje kodove.
+	 * 
+	 * @param parent
+	 *            - model nadredjene parent table.
+	 * @param selected
+	 *            - selektovani red u tabeli.
+	 * @return - transformisani red.
+	 */
+	private TableRowModel transformNamesToCodes(TableModel1 parent, TableRowModel selected) {
+		TableRowModel rowWithCodes = new TableRowModel();
+		ArrayList<String> names = selected.getFieldNames();
+		ArrayList<String> values = selected.getFieldValues();
+		String tempCode = "";
+
+		for (int i = 0; i < names.size(); i++) {
+			tempCode = parent.getFieldCodeFromName(names.get(i));
+			rowWithCodes.addPair(tempCode, values.get(i));
+		}
+
+		return rowWithCodes;
+	}
+
+	public TableModel1 getParent(String code) {
+		return parents.get(code);
+	}
+
+	public ArrayList<TableFieldModel> getFieldModels() {
+		ArrayList<TableFieldModel> povratna = new ArrayList<TableFieldModel>(polja);
+		return povratna;
+	}
+
+	public String getLabel() {
+		String ret = "";
+		if (MainFrame.getInstance().isSQLReader()) {
+			ret = MainFrame.getInstance().getResourceBundle().getString(code);
+		} else {
+			ret = MainFrame.getInstance().getResourceBundle().getString(label);
+		}
+		return ret;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+	public HashMap<String, TableFieldModel> getFields() {
+		return fields;
+	}
+
+	public void setFields(HashMap<String, TableFieldModel> fields) {
+		this.fields = fields;
+	}
+
+	public HashMap<String, TableModel1> getChildren() {
+		return children;
+	}
+
+	public void setChildren(HashMap<String, TableModel1> children) {
+		this.children = children;
+	}
+
+	public ArrayList<String> getPrimaryKeys() {
+		return primaryKeys;
+	}
+
+	public void setPrimaryKeys(ArrayList<String> primaryKeys) {
+		this.primaryKeys = primaryKeys;
+	}
+
+	public HashMap<String, TableModel1> getParents() {
+		return parents;
+	}
+
+	public void setParents(HashMap<String, TableModel1> parents) {
+		this.parents = parents;
+	}
+
+	public HashMap<String, ArrayList<String>> getChildrenList() {
+		return childrenList;
+	}
+
+	public void setChildrenList(HashMap<String, ArrayList<String>> childrenList) {
+		this.childrenList = childrenList;
+	}
+
+	public boolean isParent() {
+		return isParent;
+	}
+
+	public void setParent(boolean isParent) {
+		this.isParent = isParent;
+	}
+
+	public ArrayList<String> getKodoviDece() {
+		return kodoviDece;
+	}
+
+	public void setKodoviDece(ArrayList<String> kodoviDece) {
+		this.kodoviDece = kodoviDece;
+	}
+
+	public ArrayList<TableRowModel> getRows() {
+		return rows;
+	}
+
+	public void setRows(ArrayList<TableRowModel> rows) {
+		this.rows = rows;
+	}
+
+	public TableComponent getTableComponent() {
+		return tableComponent;
+	}
+
+	public void setTableComponent(TableComponent tableComponent) {
+		this.tableComponent = tableComponent;
+	}
+
+	public void addRow(TableRowModel tableRowModel) {
+		this.rows.add(tableRowModel);
+	}
+
+	public ArrayList<TableFieldModel> getPolja() {
+		return polja;
+	}
+
+	public void setPolja(ArrayList<TableFieldModel> polja) {
+		this.polja = polja;
+	}
+
+	public String getPomocniNaziv() {
+		return pomocniNaziv;
+	}
+
+	public void setPomocniNaziv(String pomocniNaziv) {
+		this.pomocniNaziv = pomocniNaziv;
+	}
+
+	public void addPrimaryKey(String key) {
+		this.primaryKeys.add(key);
+	}
+
+}

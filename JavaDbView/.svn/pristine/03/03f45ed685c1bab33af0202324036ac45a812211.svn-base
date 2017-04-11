@@ -1,0 +1,176 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+
+import contoller.ILocalization;
+import gui.MainFrame;
+import model.TableFieldModel;
+import model.TableModel1;
+import model.TableRowModel;
+
+/**
+ * Klasa koja predstavlja view tabele koja je otovrena u tabu. Sadrzi podatke o
+ * modelu.
+ */
+public class TableView1 extends JPanel implements ILocalization {
+
+	private static final long serialVersionUID = 3939576385154700713L;
+
+	private TableModel1 tableModel;
+	private JTable tabela;
+	private ArrayList<TableFieldModel> kolone;
+
+	private ArrayList<TableRowModel> redovi;
+	// private ArrayList<String> vrsta;
+
+	private JScrollPane skrol;
+	private String naziv;
+
+	private DefaultTableModel model = null;
+
+	public TableView1(TableModel1 tableModel) {
+		this.setLayout(new BorderLayout());
+		this.tableModel = tableModel;
+
+		this.kolone = new ArrayList<TableFieldModel>();
+		// this.kolone = tableModel.getFieldModels(); -- ovo uzima iz mape i
+		// razbacuje random
+		this.kolone = tableModel.getPolja(); // ovo uzima redom polja kako su
+												// ubacivana u listu
+		this.tabela = initTable(kolone);
+		this.redovi = new ArrayList<TableRowModel>();
+		this.redovi = tableModel.getRows();
+		/*
+		 * this.vrsta = new ArrayList<String>(); this.tabela = initTable(kolone,
+		 * redovi);
+		 */
+
+		// novo
+		model = new DefaultTableModel() {
+			public boolean isCellEditable(int row, int col) {
+				return false;
+			}
+		};
+
+		// for(String s : tableModel.getFieldNames()){
+		// model.addColumn(s);
+		// }
+		for (TableFieldModel kolona : this.kolone) {
+			model.addColumn(kolona.getLabel());
+		}
+
+		this.tabela = new JTable(model);
+
+		this.redovi = popuniModelTabele(MainFrame.getInstance().getDbDataHandler().getAllFromTable(tableModel));
+		for (int i = 0; i < redovi.size(); i++) {
+			this.tableModel.addRow(redovi.get(i));
+		}
+
+		popuniModelTabele(MainFrame.getInstance().getDbDataHandler().getAllFromTable(tableModel));
+
+		this.skrol = new JScrollPane(tabela);
+		this.naziv = tableModel.getLabel();
+
+		add(this.skrol);
+	}
+
+	public JScrollPane getSkrol() {
+		return skrol;
+	}
+
+	public void setSkrol(JScrollPane skrol) {
+		this.skrol = skrol;
+	}
+
+	public String getNaziv() {
+		return naziv;
+	}
+
+	public void setNaziv(String naziv) {
+		this.naziv = naziv;
+	}
+
+	public JTable getTabela() {
+		return tabela;
+	}
+
+	public void setTabela(JTable tabela) {
+		this.tabela = tabela;
+	}
+
+	public ArrayList<TableFieldModel> getKolone() {
+		return kolone;
+	}
+
+	public void setKolone(ArrayList<TableFieldModel> kolone) {
+		this.kolone = kolone;
+	}
+
+	public TableModel1 getTableModel() {
+		return tableModel;
+	}
+
+	public void setTableModel(TableModel1 tableModel) {
+		this.tableModel = tableModel;
+	}
+
+	private JTable initTable(ArrayList<TableFieldModel> fields) {
+		JTable temp;
+		Object[] columns = new Object[] {};
+		for (int i = 0; i < fields.size(); i++) {
+			columns = appendValue(columns, fields.get(i).getLabel());
+		}
+		model = new DefaultTableModel(columns, 0);
+		temp = new JTable(model);
+		return temp;
+	}
+
+	public void addRow(ArrayList<String> inputValues) {
+		Object[] rowData = inputValues.toArray();
+		model.addRow(rowData); // popunjavam view deo
+	}
+
+	public void deleteRow(ArrayList<String> inputValues, int index) {
+		Object[] rowData = inputValues.toArray();
+		model.removeRow(index); // brisem row iz view dela
+	}
+
+	public void editRow(int index, ArrayList<String> inputValues) {
+		model.removeRow(index);
+		Object[] rowData = inputValues.toArray();
+		model.insertRow(index, rowData);
+	}
+
+	private Object[] appendValue(Object[] obj, Object newObj) {
+		ArrayList<Object> temp = new ArrayList<Object>(Arrays.asList(obj));
+		temp.add(newObj);
+		return temp.toArray();
+	}
+
+	@Override
+	public void translate() {
+
+	}
+
+	public ArrayList<TableRowModel> popuniModelTabele(ArrayList<TableRowModel> rows) {
+		if (model.getRowCount() > 0) {
+			for (int i = model.getRowCount() - 1; i >= 0; i--) {
+				model.removeRow(i);
+			}
+		}
+		for (TableRowModel tableRow : rows) {
+
+			model.addRow(tableRow.getFieldValues().toArray());
+		}
+
+		return rows;
+	}
+
+}

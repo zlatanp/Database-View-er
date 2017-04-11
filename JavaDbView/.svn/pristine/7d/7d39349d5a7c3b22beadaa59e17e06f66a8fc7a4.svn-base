@@ -1,0 +1,28 @@
+package actions;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Locale;
+
+
+import gui.MainFrame;
+
+/**
+ * Klasa koja sluzi za lokalizaciju - engleski jezik.
+ * 
+ * @author user(Svetlana)
+ *
+ */
+
+public class EnglishLanguageAction implements ActionListener {
+
+	
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		Locale.setDefault(new Locale("en", "US"));
+		MainFrame.getInstance().setEnglish(true);
+		MainFrame.getInstance().changeLanguage();
+	}
+
+}

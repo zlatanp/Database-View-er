@@ -1,0 +1,47 @@
+package tests;
+
+import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import data.reader.JSONDataReader;
+
+public class JSONDataReaderTest {
+
+	JSONDataReader reader;
+	
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+	}
+
+	@Before
+	public void setUp() throws Exception {
+		this.reader = new JSONDataReader("resources/stari.json");
+		this.reader.parseJson();
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	@Test
+	public void testGetTabele() {
+		int brojTabela = reader.getTabele().size();
+		assertEquals(14, brojTabela);
+	}
+
+	@Test
+	public void testGetPaketi() {
+		int brojPaketa = reader.getPaketi().size();
+		assertEquals(2, brojPaketa);
+	}
+
+}

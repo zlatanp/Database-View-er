@@ -1,0 +1,12 @@
+package test.model;
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
+
+@RunWith(Suite.class)
+@SuiteClasses({ TabbedPaneModelTest.class, TableFieldModelTest.class, TableModelTest.class, TableRowModelTest.class,
+		ValidationTest.class })
+public class AllTests {
+
+}

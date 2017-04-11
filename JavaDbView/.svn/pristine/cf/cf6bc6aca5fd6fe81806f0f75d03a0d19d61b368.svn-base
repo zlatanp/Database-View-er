@@ -1,0 +1,41 @@
+package tests;
+
+import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import data.reader.JSONDataReader;
+import model.TableModel1;
+
+public class ReadTest {
+	private static JSONDataReader jsonDataReader;
+	private TableModel1 table;
+	private String readData;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		jsonDataReader = new JSONDataReader("resources/stari.json");
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+	}
+
+	@Before
+	public void setUp() throws Exception {
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	@Test
+	public void test() {
+		fail("Not yet implemented");
+	}
+
+}

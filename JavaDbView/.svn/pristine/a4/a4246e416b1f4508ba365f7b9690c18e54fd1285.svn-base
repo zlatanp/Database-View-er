@@ -1,0 +1,269 @@
+package gui;
+
+import java.awt.BorderLayout;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
+
+import actions.ActionManager;
+import contoller.UpdateManager;
+import data.reader.DBDataHandler;
+import data.reader.JSONDataReader;
+import tree.WorkspaceModel;
+import tree.WorkspaceTree;
+import view.WorkspaceView;
+
+public class MainFrame extends JFrame {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -58514644322375822L;
+	private static MainFrame instance = null;
+	private MenuBar menuBar = null;
+	private Toolbar toolbar = null;
+
+	private WorkspaceView workspaceView;
+
+	private JSONDataReader jsonDataReader;
+	private WorkspaceModel workspaceModel;
+	private WorkspaceTree tree = null;
+	private ActionManager actionManager = null;
+	private UpdateManager updateManager = null;
+
+	private ResourceBundle resourceBundle;
+
+	private static Connection dbConnection = null;
+	private DBDataHandler dbDataHandler = null;
+
+	private boolean isEnglish = false;
+	private boolean isSerbian = true; // kao defaultni lokal zbog formatiranja
+
+	private boolean isSQLReader = false;
+	
+	private NoviLoginDijalog loginDijalog;
+	
+	private MainFrame() {
+		jsonDataReader = new JSONDataReader("resources/stari.json");
+		updateManager = new UpdateManager();
+		dbDataHandler = new DBDataHandler();
+
+		Locale.setDefault(new Locale("sr", "RS"));
+		resourceBundle = ResourceBundle.getBundle(
+				"gui.MessageResources.MessageResources", Locale.getDefault());
+
+	}
+
+	public static MainFrame getInstance() {
+		if (instance == null) {
+			instance = new MainFrame();
+			try {
+				instance.initialise();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return instance;
+	}
+
+	// singleton za konekciju
+	public static Connection getConnection() {
+		if (dbConnection == null) {
+			try {
+				dbConnection = DriverManager.getConnection(
+						"jdbc:jtds:sqlserver://147.91.175.155/psw-2016-tim7-2",
+						"psw-2016-tim7-2", "tim7-29676185");
+//				dbConnection = DriverManager.getConnection(
+//						"jdbc:jtds:sqlserver://192.168.77.230/psw-2016-tim7-2",
+//						"psw-2016-tim7-2", "tim7-29676185");
+			} catch (SQLException e) {
+				DialogUpozorenje upozorenje = new DialogUpozorenje();
+				upozorenje.setVisible(true);
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return dbConnection;
+	}
+	
+	public static void setNewConnection(String url, String uname, String pass){
+		if(dbConnection != null){
+			try{
+				dbConnection = DriverManager.getConnection("jdbc:jtds:sqlserver://"+url, uname, pass);
+				
+			} catch (SQLException e){
+				DialogUpozorenje upozorenje = new DialogUpozorenje(e.getMessage());
+				upozorenje.setVisible(true);
+			}
+		}
+	}
+
+	private void initialise() throws IOException {
+		setTitle(resourceBundle.getString("naslovAplikacije"));
+
+		//loginDijalog = new NoviLoginDijalog(this, true);
+		//loginDijalog.setVisible(true);
+		
+		// Podesavanje velicine i pozicije prozora
+		Toolkit kit = Toolkit.getDefaultToolkit();
+		int height = kit.getScreenSize().height;
+		int width = kit.getScreenSize().width;
+		setSize((int) (width * 0.6), (int) (height * 0.8));
+		setLocationRelativeTo(null);
+
+		// Postavljanje ikone prozora
+		Image img = kit.getImage("images/dbviewicon.png");
+		setIconImage(img);
+
+		// ActionManager
+		actionManager = new ActionManager();
+
+		// Dodavanje komponenti prozora
+
+		// Menu
+		menuBar = new MenuBar();
+		setJMenuBar(menuBar);
+
+		// Toolbar
+		toolbar = new Toolbar();
+		add(toolbar, BorderLayout.NORTH);
+
+		
+		
+
+				initTree();
+
+
+		// Split pane
+		JScrollPane scrollPane = new JScrollPane(tree);
+		JSplitPane splitpane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+				scrollPane, workspaceView);
+
+		add(splitpane, BorderLayout.CENTER);
+
+		setExtendedState(JFrame.MAXIMIZED_BOTH);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setVisible(true);
+		splitpane.setDividerLocation(0.4); // promeni kad dodas login
+
+		jsonDataReader.parseJson(); // parsiranje se obavlja prilikom kreiranja
+
+		tree.translate();
+
+		dbConnection = getConnection();
+	}
+
+	public void initTree() {
+		tree = new WorkspaceTree();
+		workspaceModel = new WorkspaceModel();
+		tree.setModel(workspaceModel);
+		workspaceView = new WorkspaceView();
+	}
+
+	public JSONDataReader getJsonDataReader() {
+		return jsonDataReader;
+	}
+
+	public WorkspaceTree getTree() {
+		return tree;
+	}
+
+	public void setTree(WorkspaceTree tree) {
+		this.tree = tree;
+	}
+
+	public WorkspaceModel getWorkspaceModel() {
+		return workspaceModel;
+	}
+
+	public void setWorkspaceModel(WorkspaceModel workspaceModel) {
+		this.workspaceModel = workspaceModel;
+	}
+
+	public ActionManager getActionManager() {
+		return actionManager;
+	}
+
+	public WorkspaceView getWorkspaceView() {
+		return workspaceView;
+	}
+
+	public void setWorkspaceView(WorkspaceView workspaceView) {
+		this.workspaceView = workspaceView;
+	}
+
+	public UpdateManager getUpdateManager() {
+		return updateManager;
+	}
+
+	public void setUpdateManager(UpdateManager updateManager) {
+		this.updateManager = updateManager;
+	}
+
+	public ResourceBundle getResourceBundle() {
+		return resourceBundle;
+	}
+
+	@SuppressWarnings("static-access")
+	public void changeLanguage() {
+		// zbog formata vremene i datuma
+		if (isEnglish) {
+			dbDataHandler.setDateFormat(dbDataHandler.ENGLISH_DATE_FORMAT);
+		} else {
+			dbDataHandler.setDateFormat(dbDataHandler.SERBIAN_DATE_FORMAT);
+		}
+
+		resourceBundle = ResourceBundle.getBundle(
+				"gui.MessageResources.MessageResources", Locale.getDefault());
+		// setTitle(resourceBundle.getString("naslovAplikacije"));
+		menuBar.initComponents();
+		tree.translate();
+		workspaceView.translate();
+	}
+	
+
+	public DBDataHandler getDbDataHandler() {
+		return dbDataHandler;
+	}
+
+	public void setDbDataHandler(DBDataHandler dbDataHandler) {
+		this.dbDataHandler = dbDataHandler;
+	}
+
+	public boolean isEnglish() {
+		return isEnglish;
+	}
+
+	public void setEnglish(boolean isEnglish) {
+		this.isEnglish = isEnglish;
+	}
+
+	public boolean isSerbian() {
+		return isSerbian;
+	}
+
+	public void setSerbian(boolean isSerbian) {
+		this.isSerbian = isSerbian;
+	}
+
+	public boolean isSQLReader() {
+		return isSQLReader;
+	}
+
+	public void setSQLReader(boolean isSQLReader) {
+		this.isSQLReader = isSQLReader;
+	}
+	
+	
+}
+

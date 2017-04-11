@@ -1,0 +1,426 @@
+package model;
+
+import java.util.ArrayList;
+
+/**
+ * Klasa koja predstavlja red u bazi
+ * 
+ * @author Zlatan
+ * @author Milena
+ * @author Jasmina
+ * @author user(Svetlana)
+ */
+
+public class TableRowModel {
+
+	private ArrayList<String> fieldNames;
+	private ArrayList<String> fieldValues;
+
+	public TableRowModel() {
+		fieldNames = new ArrayList<String>();
+		fieldValues = new ArrayList<String>();
+	}
+
+	/**
+	 * Metoda koja prosledjen par naziv-vrednost dopunjuje odgovarajuce
+	 * kolekcije.
+	 * 
+	 * @param name
+	 *            - naziv kolone.
+	 * @param value
+	 *            - vrednost kolone za odredjeni red.
+	 */
+	public void addPair(String name, String value) {
+		fieldNames.add(name);
+		fieldValues.add(value);
+	}
+
+	public void editPair(String name, String value) {
+		for (int i = 0; i < fieldNames.size(); i++) {
+			if (fieldNames.get(i).equals(name)) {
+				fieldValues.set(i, value);
+			}
+		}
+
+	}
+
+	public void deletePair(String name, String value) {
+		fieldNames.remove(name);
+		fieldValues.remove(value);
+	}
+
+	/**
+	 * Metoda koja prosledjen par kolekcija nazivi-vrednosti, dopunjuje
+	 * odgovarajuce kolekcije.
+	 * 
+	 * @param names
+	 *            - nazivi kolona.
+	 * @param values
+	 *            - vrednosti kolona za odredjeni red.
+	 */
+	public void addPairs(ArrayList<String> names, ArrayList<String> values) {
+		fieldNames.addAll(names);
+		fieldValues.addAll(values);
+	}
+
+	/**
+	 * Metoda koja prosledjen par kolekcija nazivi-vrednosti, brise iz
+	 * odgovarajuce kolekcije.
+	 * 
+	 * @param names
+	 *            - nazivi kolona.
+	 * @param values
+	 *            - vrednosti kolona za odredjeni red.
+	 */
+
+	public void deletePairs(ArrayList<String> names, ArrayList<String> values) {
+		fieldNames.removeAll(names);
+		fieldValues.removeAll(values);
+	}
+
+	/**
+	 * Metoda koja za prosledjeni naziv kolone vraca njenu vrednost u
+	 * odgovarajucem redu.
+	 * 
+	 * @param name
+	 *            - naziv kolone.
+	 * @return - vrednost kolone.
+	 */
+	public String getValue(String name) {
+		int index = 0;
+		String retValue = "";
+
+		index = fieldNames.indexOf(name);
+
+		// moze da izbaci gresku
+		try {
+			retValue = fieldValues.get(index);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return retValue;
+	}
+
+	/**
+	 * Metoda koja dobavlja broj kolona za red.
+	 * 
+	 * @return - broj kolona.
+	 */
+	public int getNumOfColumnsInRow() {
+		return fieldValues.size();
+	}
+
+	/**
+	 * Metoda koja red ispisuje u formatu stringa.
+	 * 
+	 * @return - string naziv kolone: njena vrednost.
+	 */
+	public String rowToString() {
+		String retVal = "";
+		for (int i = 0; i < fieldNames.size(); i++) {
+			retVal += "\n" + fieldNames.get(i) + ": " + fieldValues.get(i);
+		}
+
+		return retVal;
+	}
+
+	/**
+	 * Metoda koja za prosledjenu listu {@link model.TableFieldModel modela
+	 * polja(kolona)} pravi {@link java.lang.String String} koji sadrzi nazive
+	 * polja cije vrednosti se dodaju u bazu podataka.
+	 * 
+	 * @param fields
+	 *            - modeli polja(kolona) ciji kodovi treba da se nadju u upitu.
+	 * @return - string za komandu azuriranja u bazi.
+	 */
+	public String getFieldsForQuery(ArrayList<TableFieldModel> fields) {
+		StringBuilder builder = new StringBuilder();
+
+		builder.append(fieldNames.get(0));
+		if (fieldNames.size() > 1) {
+			for (int i = 1; i < fieldNames.size(); i++) {
+				builder.append(",");
+				builder.append(getFieldCodeForFieldName(fieldNames.get(i), fields));
+			}
+		}
+		return builder.toString();
+	}
+
+	/**
+	 * Metoda koja za prosledjen kod kolone i listu modela kolona, pretrazuje
+	 * kolekciju kolona za trenutni red i vraca kolonu sa takvim kodom ukoliko
+	 * postoji.
+	 * 
+	 * @param code
+	 *            - kod kolone.
+	 * @param fields
+	 *            - kolekcija kolona.
+	 * @return
+	 * 		- kod odgovarajuce kolone.
+	 */
+	public String getFieldCodeForFieldName(String code, ArrayList<TableFieldModel> fields) {
+		String fieldCode = "";
+
+		for (TableFieldModel field : fields) {
+			if (field.getCode().equals(code)) {
+				fieldCode = field.getCode();
+				break;
+			}
+		}
+
+		if (fieldCode.equals("")) {
+			for (TableFieldModel field : fields) {
+				if (field.getLabel().equals(code)) {
+					fieldCode = field.getCode();
+					break;
+				}
+			}
+		}
+
+		return fieldCode;
+	}
+
+	/**
+	 * Metoda koja za prosledjeni naziv kolone i listu modela kolona pretrazuje
+	 * kolekciju i vraca tip sa odgovarajucim nazivom.
+	 * 
+	 * @param type
+	 *            - naziv kolone ciji tip se trazi .
+	 * @param fields
+	 *            - {@link java.util.ArrayList Lista} kolona medju kojima se
+	 *            trazi tip.
+	 * @return - naziv tipa.
+	 */
+	public String getFieldTypeForFieldName(String type, ArrayList<TableFieldModel> fields) {
+		String fieldType = "";
+		for (TableFieldModel field : fields) {
+			if (field.getLabel().equals(type)) { // OVO SAM MENJALA:
+				// field.getType().equals(type)
+				fieldType = field.getType();
+				break;
+			}
+		}
+
+		if (fieldType.equals("")) {
+			for (TableFieldModel field : fields) {
+				if (field.getCode().equals(type)) {
+					fieldType = field.getType();
+					break;
+				}
+			}
+		}
+
+		return fieldType;
+	}
+
+	/**
+	 * Metoda koja na osnovu broja vrednosti kolona generise
+	 * {@link java.lang.String String} upitnika za upit bazi.
+	 * 
+	 * @return - string za upit.
+	 */
+	public String getQuestionMarksForQuery() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("(?");
+		if (fieldValues.size() > 1) {
+			for (int i = 1; i < fieldValues.size(); i++) {
+				builder.append(",?");
+			}
+		}
+		builder.append(");");
+
+		return builder.toString();
+	}
+
+	/**
+	 * Metoda koja za {@link model.TableModel1 model table} generise
+	 * {@link java.lang.String String} {@code WHERE} klauzule {@code UPDATE} ili
+	 * {@code DELETE} komande sa vrednostima kljuca, razdvojenim kljucnom reciju
+	 * {@code AND}
+	 * 
+	 * @param table
+	 *            - model tabele nad kojom se azuriraju ili brisu podaci.
+	 * @return {@link java.lang.String String} WHERE klauzule {@code UPDATE} ili
+	 *         {@code DELETE} komande rada sa bazom podataka.
+	 */
+	public String generateWhereClause(TableModel1 table) {
+		StringBuilder builder = new StringBuilder();
+		ArrayList<String> primarniKljucevi = table.getPrimaryKeys();
+
+		// WHERE id=? AND name=? moras nekako povezati
+		builder.append(getFieldCodeForFieldName(primarniKljucevi.get(0), table.getFieldModels()));
+		builder.append("=?");
+
+		if (primarniKljucevi.size() > 1) {
+			for (int i = 1; i < primarniKljucevi.size(); i++) {
+				builder.append(" AND ");
+				builder.append(getFieldCodeForFieldName(primarniKljucevi.get(i), table.getFieldModels()));
+				builder.append("=?");
+			}
+		}
+
+		return builder.toString();
+	}
+
+	/**
+	 * Metoda koja za sve kolone reda generise WHERE klauzulu, bez obzira da li
+	 * su kljucna ili ne.
+	 * 
+	 * @param table
+	 *            - model tabele za koju se pravi upit.
+	 * @return {@link java.lang.String String} vrednost dela WHERE klauzule za
+	 *         kolone reda.
+	 */
+	public String generateWhereClauseForAll(TableModel1 table) {
+		StringBuilder builder = new StringBuilder();
+
+		builder.append(getFieldCodeForFieldName(fieldNames.get(0), table.getFieldModels()));
+		builder.append("=?");
+
+		if (fieldValues.size() > 1) {
+			for (int i = 0; i < fieldValues.size(); i++) {
+				builder.append(" AND ");
+				builder.append(getFieldCodeForFieldName(fieldValues.get(i), table.getFieldModels()));
+				builder.append("=?");
+			}
+		}
+
+		return builder.toString();
+	}
+
+	/**
+	 * Metoda koja generise deo WHERE klauzule koja koristi LIKE operator za
+	 * poredjenje {@link java.lang.String String}-ova
+	 * 
+	 * @param table
+	 *            - model table za koju se pravi upit.
+	 * @return {@link java.lang.String String} vrednost dela WHERE klauzule za
+	 *         kolone reda.
+	 */
+	public String generateWhereClauseWithLike(TableModel1 table) {
+		StringBuilder builder = new StringBuilder();
+
+		builder.append(getFieldCodeForFieldName(fieldNames.get(0), table.getFieldModels()));
+		builder.append(" LIKE ?");
+
+		if (fieldValues.size() > 1) {
+			builder.append(" AND ");
+			builder.append(getFieldCodeForFieldName(fieldNames.get(0), table.getFieldModels()));
+			builder.append(" LIKE ? ");
+		}
+
+		return builder.toString();
+	}
+
+	/**
+	 * Metoda koja za prosledjeni {@link model.TableModel1 model table} generise
+	 * {@link java.lang.String String} {@code SET} klauzule {@code UPDATE}
+	 * komande samo sa ne-kljucnim obelezjima, jer je kljucna obelezja
+	 * zabranjeno azurirati.
+	 * 
+	 * @param table
+	 *            - model tabele za koju se pravi upit.
+	 * @return - {@link java.lang.String String} {@code SET} klauzule
+	 *         {@code UPDATE} komande rada sa bazom podataka.
+	 */
+	// UPDATE Customers
+	// SET ContactName='Alfred Schmidt', City='Frankfurt'
+	// WHERE CustomerID=1;
+	public String generateSetClause(TableModel1 table) {
+		StringBuilder builder = new StringBuilder();
+		ArrayList<String> primarniKljucevi = table.getPrimaryKeys();
+		ArrayList<String> koloneKojeNisuKljuc = new ArrayList<>();
+		String fieldCode = "";
+
+		for (int i = 0; i < fieldNames.size(); i++) {
+			koloneKojeNisuKljuc.add(fieldNames.get(i));
+		}
+
+		// ubacujemo primarne kljuceve u prozor
+		for (String rowFieldName : fieldNames) {
+			fieldCode = getFieldCodeForFieldName(rowFieldName, table.getFieldModels());
+			for (int i = 0; i < primarniKljucevi.size(); i++) {
+				if (fieldCode.equals(primarniKljucevi.get(i))) {
+					koloneKojeNisuKljuc.remove(i);
+				}
+			}
+
+		}
+
+		builder.append(getFieldCodeForFieldName(koloneKojeNisuKljuc.get(0), table.getFieldModels()));
+		builder.append("=?");
+
+		if (koloneKojeNisuKljuc.size() > 1) {
+			for (int i = 1; i < koloneKojeNisuKljuc.size(); i++) {
+				builder.append(", ");
+				builder.append(getFieldCodeForFieldName(koloneKojeNisuKljuc.get(i), table.getFieldModels()));
+				builder.append("=?");
+			}
+		}
+
+		return builder.toString();
+	}
+
+	/**
+	 * Metoda koja sluzi kao priprema {@code TableRowModel}-a za popunjavanje
+	 * vrednostima upitnika unutar {@code UPDATE} komande. Trenutni red se
+	 * modifikuje tako sto u potpuno novu instancu {@code TableRowModel}-a
+	 * ubacuju ista polja i vrednosti, samo sa izmenjenim redosledom. Prvo se
+	 * ubacuju ne-kljucna, pa zatim kljucna obelezja, sa njihovim vrednostima,
+	 * respektivno.
+	 * 
+	 * @param table
+	 *            - model tabele za koju se pravi upit.
+	 * @return - modifikovan red za potrebe {@code UPDATE} komande nad bazom
+	 *         podataka.
+	 */
+	public TableRowModel promeniRowZaUpdate(TableModel1 table) {
+		TableRowModel noviRed = new TableRowModel();
+		ArrayList<String> promenjeniNaziviPolja = new ArrayList<>();
+		ArrayList<String> promenjeneVrednostiPolja = new ArrayList<>();
+		ArrayList<String> kljucevi = table.getPrimaryKeys();
+
+		String code, rowFieldName;
+
+		// dodajem obelezja koja nisu kljucna i vrednosti u red koji se
+		// modifikuje
+		for (int i = 0; i < fieldNames.size(); i++) {
+			rowFieldName = fieldNames.get(i);
+			code = getFieldCodeForFieldName(rowFieldName, table.getFieldModels());
+			if (!kljucevi.contains(code)) {
+				promenjeniNaziviPolja.add(rowFieldName);
+				promenjeneVrednostiPolja.add(fieldValues.get(i));
+			}
+		}
+
+		for (int i = 0; i < fieldNames.size(); i++) {
+			rowFieldName = fieldNames.get(i);
+			code = getFieldCodeForFieldName(rowFieldName, table.getFieldModels());
+			if (kljucevi.contains(code)) {
+				promenjeniNaziviPolja.add(rowFieldName);
+				promenjeneVrednostiPolja.add(fieldValues.get(i));
+			}
+		}
+		noviRed.addPairs(promenjeniNaziviPolja, promenjeneVrednostiPolja);
+
+		return noviRed;
+	}
+
+	public ArrayList<String> getFieldNames() {
+		return fieldNames;
+	}
+
+	public void setFieldNames(ArrayList<String> fieldNames) {
+		this.fieldNames = fieldNames;
+	}
+
+	public ArrayList<String> getFieldValues() {
+		return fieldValues;
+	}
+
+	public void setFieldValues(ArrayList<String> fieldValues) {
+		this.fieldValues = fieldValues;
+	}
+
+}

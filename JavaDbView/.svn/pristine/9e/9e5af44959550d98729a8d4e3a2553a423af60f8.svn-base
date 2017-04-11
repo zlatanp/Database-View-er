@@ -1,0 +1,151 @@
+package tests;
+
+import static org.junit.Assert.*;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import gui.MainFrame;
+import model.TableFieldModel;
+import model.TableModel1;
+import model.TableRowModel;
+
+/**
+ * Klasa koja predstavlja testiranje Update metode sa bazom.
+ * 
+ * @author Milena
+ *
+ */
+
+public class UpdateDataTest {
+	private static Connection connection;
+	private static Statement statement;
+	private TableModel1 table;
+	private String readData;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		try {
+			Class.forName("net.sourceforge.jtds.jdbc.Driver");
+			connection = DriverManager.getConnection("jdbc:jtds:sqlserver://147.91.175.155/psw-2016-tim7-2",
+					"psw-2016-tim7-2", "tim7-29676185");
+			MainFrame.setNewConnection("jdbc:jtds:sqlserver://147.91.175.155/psw-2016-tim7-2", "psw-2016-tim7-2",
+					"tim7-29676185");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		statement = connection.createStatement();
+		statement.execute("CREATE TABLE dbo.TEST_UPDATE " + "(TI_OZNAKA char(3) not null primary key,"
+				+ "TI_DRZAVA varchar(30) not null)");
+
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+		statement.execute("DROP TABLE dbo.TEST_UPDATE");
+		connection.close();
+	}
+
+	@Before
+	public void setUp() throws Exception {
+		table = new TableModel1();
+		table.setCode("TEST_UPDATE");
+		table.setFields(new HashMap<String, TableFieldModel>());
+		table.setPolja(new ArrayList<TableFieldModel>());
+		table.setPrimaryKeys(new ArrayList<String>());
+
+		TableFieldModel fieldOznaka = new TableFieldModel();
+		fieldOznaka.setCode("TI_OZNAKA");
+		fieldOznaka.setLabel("TI_Oznaka");
+		table.addPrimaryKey("TI_OZNAKA");
+		fieldOznaka.setPrimaryKey(true);
+		fieldOznaka.setMandatory(true);
+		fieldOznaka.setType("char");
+		fieldOznaka.setCodeTable("TEST_UPDATE");
+		table.addField(fieldOznaka);
+		table.dodajPolje(fieldOznaka);
+
+		TableFieldModel fieldDrzava = new TableFieldModel();
+		fieldDrzava.setCode("TI_DRZAVA");
+		fieldDrzava.setLabel("TI_Drzava");
+		fieldOznaka.setMandatory(false);
+		fieldOznaka.setPrimaryKey(false);
+		fieldDrzava.setType("varchar");
+		fieldDrzava.setCodeTable("TEST_UPDATE");
+
+		table.addField(fieldDrzava);
+		table.dodajPolje(fieldDrzava);
+
+		// insert
+		table.setRows(new ArrayList<TableRowModel>());
+		TableRowModel rowForInsert = new TableRowModel();
+		rowForInsert.addPair("TI_OZNAKA", "SRB");
+		rowForInsert.addPair("TI_DRZAVA", "Srbija");
+		table.addRow(rowForInsert);
+		MainFrame.getInstance().getDbDataHandler().insert(table, rowForInsert);
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	/**
+	 * Testiranje je neuspesno ukoliko konekcija sa bazom nije moguca.
+	 * Testiranje je uspesno ukoliko se unete izmene upisu u bazu.
+	 */
+	@Test
+	public void test() throws SQLException {
+		boolean testSuccess = true;
+
+		ArrayList<TableRowModel> rows = table.getRows();
+		TableRowModel rowForUpdate = rows.get(0);
+		ArrayList<String> fieldNames = rowForUpdate.getFieldNames();
+		ArrayList<String> fieldValues = rowForUpdate.getFieldValues();
+
+		for (int i = 0; i < fieldValues.size(); i++) {
+			if (i % 2 == 0) {
+				fieldValues.set(1, "Serbia");
+				rowForUpdate.editPair("TI_DRZAVA", "Serbia");
+			} else {
+				fieldValues.set(i, "Serbia");
+				rowForUpdate.editPair(fieldNames.get(i), "Serbia");
+			}
+		}
+
+		MainFrame.getInstance().getDbDataHandler().update(table, rowForUpdate);
+
+		ArrayList<TableRowModel> newResults = MainFrame.getInstance().getDbDataHandler().getAllFromTable(table);
+
+		readData = "SELECT * FROM dbo.TEST_UPDATE";
+		ResultSet results = connection.createStatement().executeQuery(readData);
+
+		for (int j = 0; j < newResults.size(); j++) {
+			while (results.next()) {
+				for (int i = 0; i < results.getMetaData().getColumnCount(); i++) {
+					String result = results.getString(i + 1);
+					String newResult = newResults.get(j).getFieldValues().get(i);
+					if (result == null)
+						result = "";
+					if (newResult == null)
+						newResult = "";
+					if (!result.equals(newResult))
+						testSuccess = false;
+				}
+			}
+		}
+		assertTrue(testSuccess);
+	}
+
+}

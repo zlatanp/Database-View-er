@@ -1,0 +1,151 @@
+package gui;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
+/**
+ * 
+ * @author Milena
+ *
+ */
+public class LoginFrame extends JDialog{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8766134122117557618L;
+	
+	
+	private JLabel usernameLabel;
+	private JTextField textFieldUsername;
+
+	private JLabel passwordLabel;
+	private JPasswordField textFieldPassword;
+
+	private DialogUpozorenje upozorenje = null;
+
+	
+	public LoginFrame(final JFrame parent, boolean modal) {
+		
+		super(parent, modal);
+		
+		this.setSize(370, 200);
+		this.setLayout(new GridLayout(4, 2));
+		this.setLocationRelativeTo(null);
+		
+		
+		String naslovLogin = new String("Login");
+		this.setTitle(MainFrame.getInstance().getResourceBundle().getString(naslovLogin));
+
+		// username
+		String usernameString = new String("Username");
+		usernameLabel = new JLabel(MainFrame.getInstance().getResourceBundle().getString(usernameString));
+		this.add(usernameLabel);
+
+		textFieldUsername = new JTextField();
+		textFieldUsername.setDocument(new LoginInputField(10));
+		usernameLabel.setLabelFor(textFieldUsername);
+		this.add(textFieldUsername);
+
+		// password
+		String passString = new String("Password");
+		passwordLabel = new JLabel(MainFrame.getInstance().getResourceBundle().getString(passString));
+
+		this.add(passwordLabel);
+
+		textFieldPassword = new JPasswordField();
+		textFieldPassword.setDocument(new LoginInputField(10));
+		passwordLabel.setLabelFor(textFieldPassword);
+		this.add(textFieldPassword);
+
+		// poruke
+		JLabel labelaPoruke = new JLabel();
+		labelaPoruke.setPreferredSize(new Dimension(200, 20));
+
+		// Prijavi se dugme
+		String loginString = new String("Login");
+		JButton login = new JButton(MainFrame.getInstance().getResourceBundle().getString(loginString));
+		login.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String unetUsername = textFieldUsername.getText();
+				@SuppressWarnings("deprecation")
+				String unetPassword = textFieldPassword.getText();
+
+				// if (!unetUsername.equals("") && !unetPassword.equals("")) {
+				Connection conn = MainFrame.getConnection();
+				ResultSet rs;
+				try {
+					Statement stm = conn.createStatement();
+					rs = stm.executeQuery("SELECT REG_USER_NAME, REG_LOZINKA FROM REGISTROVANI_KORISNICI");
+					while (rs.next()) {
+						String username = rs.getString("REG_USER_NAME");
+						String pass = rs.getString("REG_LOZINKA");
+						
+						if (unetUsername.equals(username) && unetPassword.equals(pass)) {
+							setVisible(false);
+							parent.setVisible(true);
+//							MainFrame mainFrame = MainFrame.getInstance();
+//							mainFrame.setVisible(true);
+//							mainFrame.addWindowListener(new MainWindowListener());
+						} else {
+							labelaPoruke.setText("Uneti kredencijali nisu ispravni!");
+							labelaPoruke.setForeground(Color.red);
+						}
+					}
+				} catch (SQLException e2) {
+					upozorenje = new DialogUpozorenje();
+					upozorenje.setVisible(true);
+				}
+			}
+		});
+
+		this.add(login);
+
+		// Otkazi dugme
+		String otkaziString = new String("Otkazi");
+		JButton otkazi = new JButton(MainFrame.getInstance().getResourceBundle().getString(otkaziString));
+		otkazi.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				parent.dispose();
+				System.exit(0);
+			}
+		});
+		this.add(otkazi);
+
+		this.add(labelaPoruke);
+
+		this.setResizable(false);
+		this.setVisible(true);
+		this.setModal(true);
+		
+		addWindowListener(new WindowAdapter() {
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				parent.dispose();
+                System.exit(0); 
+			}
+			
+		});
+			
+		
+	}
+}

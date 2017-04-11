@@ -1,0 +1,146 @@
+package tests;
+
+import static org.junit.Assert.*;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import gui.MainFrame;
+import model.TableFieldModel;
+import model.TableModel1;
+import model.TableRowModel;
+
+/**
+ * Klasa koja predstavlja testiranje Insert metode sa bazom.
+ * 
+ * @author Svetlana
+ *
+ */
+
+public class InsertDataTest {
+
+	private static Connection connection;
+	private static Statement statement;
+	private TableModel1 table;
+	private String readData;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		try {
+
+			Class.forName("net.sourceforge.jtds.jdbc.Driver");
+			connection = DriverManager.getConnection("jdbc:jtds:sqlserver://147.91.175.155/psw-2016-tim7-2",
+					"psw-2016-tim7-2", "tim7-29676185");
+			MainFrame.setNewConnection("jdbc:jtds:sqlserver://147.91.175.155/psw-2016-tim7-2", "psw-2016-tim7-2",
+					"tim7-29676185");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		statement = connection.createStatement();
+		statement.execute("CREATE TABLE dbo.TEST_INSERT " + "(TI_OZNAKA char(3) not null primary key,"
+				+ "TI_DRZAVA varchar(30) not null)");
+
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+		statement.execute("DROP TABLE dbo.TEST_INSERT");
+		connection.close();
+	}
+
+	@Before
+	public void setUp() throws Exception {
+		table = new TableModel1();
+		table.setCode("TEST_INSERT");
+		table.setFields(new HashMap<String, TableFieldModel>());
+		table.setPolja(new ArrayList<TableFieldModel>());
+
+		TableFieldModel fieldOznaka = new TableFieldModel();
+		fieldOznaka.setCode("TI_OZNAKA");
+		fieldOznaka.setLabel("TI_Oznaka");
+		fieldOznaka.setPrimaryKey(true);
+		fieldOznaka.setMandatory(true);
+		fieldOznaka.setType("char");
+		fieldOznaka.setCodeTable("TEST_INSERT");
+		// table.getFieldModels().add(fieldOznaka);
+		// table.dodajPolje(fieldOznaka);
+		table.addField(fieldOznaka);
+		table.dodajPolje(fieldOznaka);
+
+		TableFieldModel fieldDrzava = new TableFieldModel();
+		fieldDrzava.setCode("TI_DRZAVA");
+		fieldDrzava.setLabel("TI_Drzava");
+		fieldOznaka.setMandatory(false);
+		fieldOznaka.setPrimaryKey(false);
+		fieldDrzava.setType("varchar");
+		fieldDrzava.setCodeTable("TEST_INSERT");
+		// table.getFieldModels().add(fieldDrzava);
+
+		// /table.dodajPolje(fieldDrzava);
+		table.addField(fieldDrzava);
+		table.dodajPolje(fieldDrzava);
+
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	/**
+	 * 
+	 * Metoda koja služi za proveru unesenog teksta u bazu
+	 * 
+	 * Neuspesno je ako se izostavi unos primarnog kljuca. Uspesno je uneseno u
+	 * bazu.
+	 * 
+	 * @return true ili false ako je upisivanje uspesno ili ne.
+	 */
+
+	@Test
+	public void testInsertData() throws SQLException {
+		boolean testSuccess = true;
+		table.setRows(new ArrayList<TableRowModel>());
+
+		TableRowModel rowForInsert = new TableRowModel();
+		rowForInsert.addPair("TI_OZNAKA", "SRB");
+		rowForInsert.addPair("TI_DRZAVA", "Srbija");
+
+		table.addRow(rowForInsert);
+
+		MainFrame.getInstance().getDbDataHandler().insert(table, rowForInsert);
+
+		ArrayList<TableRowModel> newResults = MainFrame.getInstance().getDbDataHandler().getAllFromTable(table);
+
+		readData = "SELECT * FROM dbo.TEST_INSERT";
+		ResultSet results = connection.createStatement().executeQuery(readData);
+
+		for (int j = 0; j < newResults.size(); j++) {
+			while (results.next()) {
+				for (int i = 0; i < results.getMetaData().getColumnCount(); i++) {
+					String result = results.getString(i + 1);
+					String newResult = newResults.get(j).getFieldValues().get(i);
+					if (result == null)
+						result = "";
+					if (newResult == null)
+						newResult = "";
+					if (!result.equals(newResult))
+						testSuccess = false;
+				}
+			}
+		}
+		assertTrue(testSuccess);
+	}
+
+}

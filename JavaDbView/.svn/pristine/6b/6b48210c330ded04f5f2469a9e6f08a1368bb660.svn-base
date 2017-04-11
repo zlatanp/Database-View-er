@@ -1,0 +1,152 @@
+package test.model;
+
+import static org.junit.Assert.assertTrue;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import gui.MainFrame;
+import model.TableFieldModel;
+import model.TableModel1;
+import model.TableRowModel;
+
+/**
+ * Klasa koja predstavlja testiranje Delete metode sa bazom.
+ * 
+ * @author Svetlana
+ *
+ */
+public class DeleteDataTest {
+
+	private static Connection connection;
+	private static Statement statement;
+	private static TableModel1 tableDelete;
+	private String readData;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		try {
+
+			Class.forName("net.sourceforge.jtds.jdbc.Driver");
+			connection = DriverManager.getConnection("jdbc:jtds:sqlserver://147.91.175.155/psw-2016-tim7-2",
+					"psw-2016-tim7-2", "tim7-29676185");
+			MainFrame.setNewConnection("jdbc:jtds:sqlserver://147.91.175.155/psw-2016-tim7-2", "psw-2016-tim7-2",
+					"tim7-29676185");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		statement = connection.createStatement();
+		statement.execute("CREATE TABLE dbo.TEST_DELETE " + "(TI_OZNAKA char(3) not null primary key,"
+				+ "TI_DRZAVA varchar(30) not null)");
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+		statement.execute("DROP TABLE dbo.TEST_DELETE");
+		connection.close();
+
+	}
+
+	@Before
+	public void setUp() throws Exception {
+		tableDelete = new TableModel1();
+		tableDelete.setCode("TEST_DELETE");
+		tableDelete.setFields(new HashMap<String, TableFieldModel>());
+		tableDelete.setPolja(new ArrayList<TableFieldModel>());
+
+		// kolone
+		TableFieldModel fieldOznaka = new TableFieldModel();
+		fieldOznaka.setCode("TI_OZNAKA");
+		fieldOznaka.setLabel("TI_Oznaka");
+		fieldOznaka.setPrimaryKey(true);
+		fieldOznaka.setMandatory(true);
+		fieldOznaka.setType("char");
+		fieldOznaka.setCodeTable("TEST_DELETE");
+		tableDelete.addField(fieldOznaka);
+		tableDelete.dodajPolje(fieldOznaka);
+
+		TableFieldModel fieldDrzava = new TableFieldModel();
+		fieldDrzava.setCode("TI_DRZAVA");
+		fieldDrzava.setLabel("TI_Drzava");
+		fieldOznaka.setMandatory(false);
+		fieldOznaka.setPrimaryKey(false);
+		fieldDrzava.setType("varchar");
+		fieldDrzava.setCodeTable("TEST_DELETE");
+		tableDelete.addField(fieldDrzava);
+		tableDelete.dodajPolje(fieldDrzava);
+
+		// vrste
+		tableDelete.setRows(new ArrayList<TableRowModel>());
+		// prva
+		TableRowModel rowForInsert = new TableRowModel();
+		rowForInsert.addPair("TI_OZNAKA", "SRB");
+		rowForInsert.addPair("TI_DRZAVA", "Srbija");
+		// druga
+		TableRowModel rowForInsert2 = new TableRowModel();
+		rowForInsert2.addPair("TI_OZNAKA", "CRO");
+		rowForInsert2.addPair("TI_DRZAVA", "Hrvatska");
+
+		tableDelete.addRow(rowForInsert);
+		tableDelete.addRow(rowForInsert2);
+		MainFrame.getInstance().getDbDataHandler().insert(tableDelete, rowForInsert);
+		MainFrame.getInstance().getDbDataHandler().insert(tableDelete, rowForInsert2);
+
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	@Test
+	public void testDeleteData() throws SQLException {
+
+		boolean testSuccess = true;
+
+		ArrayList<TableRowModel> rows = tableDelete.getRows();
+		TableRowModel rowForDeelete = rows.get(0);
+		ArrayList<String> fieldNames = rowForDeelete.getFieldNames();
+		ArrayList<String> fieldValues = rowForDeelete.getFieldValues();
+
+		for (int i = 0; i < fieldValues.size(); i++) {
+
+			rowForDeelete.deletePair("TI_DRZAVA", "Srbija");
+
+		}
+
+		MainFrame.getInstance().getDbDataHandler().delete(tableDelete, rowForDeelete);
+
+		ArrayList<TableRowModel> newResults = MainFrame.getInstance().getDbDataHandler().getAllFromTable(tableDelete);
+
+		readData = "SELECT * FROM dbo.TEST_DELETE";
+		ResultSet results = connection.createStatement().executeQuery(readData);
+
+		for (int j = 0; j < newResults.size(); j++) {
+			while (results.next()) {
+				for (int i = 0; i < results.getMetaData().getColumnCount(); i++) {
+					String result = results.getString(i + 1);
+					String newResult = newResults.get(j).getFieldValues().get(i);
+					if (result == null)
+						result = "";
+					if (newResult == null)
+						newResult = "";
+					if (!result.equals(newResult))
+						testSuccess = false;
+				}
+			}
+		}
+		assertTrue(testSuccess);
+	}
+
+}

@@ -1,0 +1,10 @@
+package contoller;
+
+/**
+ * Interfejs koji koji sluzi za lokalizaciju.
+ * */
+
+public interface ILocalization {
+
+	public void translate();
+}

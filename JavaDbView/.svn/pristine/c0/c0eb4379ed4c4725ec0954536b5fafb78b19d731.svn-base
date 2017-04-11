@@ -1,0 +1,647 @@
+{
+"MPSDrzavnaАdministracija": 
+	{
+		"packages":
+		 [		 
+				{ 
+				"ZajednickiDeo":
+				 {
+					"packages":
+					 [
+						{
+							"TeritorijalnoPolitickaOrganizacija":
+							 {
+								"packages": [],
+								"tables": [	
+										{
+											"label":"Drzava",
+											"code":"DRZAVA",
+											"fields":	[
+															{
+															"label":"OznakaDrzCol",
+															"code":"DR_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk": [{"NASELJENO_MESTO" : "DR_OZNAKA"}]
+															},
+															
+															{
+															"label":"NazivDrzCol",
+															"code":"DR_NAZIV",
+															"type":"varchar(80)",
+															"mandatory":true,
+															"fk":null
+															},
+															
+															{
+															"label":"GrbDrzCol",
+															"code":"DR_GRB",
+															"type":"image",
+															"mandatory":false,
+															"fk": null
+															},
+															
+															{
+															"label":"HimnaDrzCol",
+															"code":"DR_HIMNA",
+															"type":"image",
+															"mandatory":false,
+															"fk": null
+															},
+															
+															{
+															"label":"ZastavaDrzCol",
+															"code":"DR_ZASTAVA",
+															"type":"image",
+															"mandatory":false,
+															"fk": null
+															},				
+															
+															{
+															"label":"TekuceDrzavnoUredjenjeDrzCol",
+															"code":"DUR_OZNAKA",
+															"type":"char(1)",
+															"mandatory":false,
+															"fk": [{"DRZAVNO_UREDJENJE" : "DUR_OZNAKA"}]
+															},
+															
+															{
+															"label":"GlavniGradDrzCol",
+															"code":"NM_OZNAKA",
+															"type":"int",
+															"mandatory":false,
+															"fk": [{"NASELJENO_MESTO" : "NM_OZNAKA"}]
+															},
+															
+															{
+															"name":"PravniNaslednikDrzCol",
+															"code":"DRZ_DR_OZNAKA",
+															"type":"char(3)",
+															"mandatory":false,
+															"fk": [{"DRZAVA" : "DR_OZNAKA"}]
+															}
+													],
+										"children":[
+														{
+															"codeTable" : "ISTORIJA_UREDJENJA",
+															"labelTable" : "IstorijaUredjenja",
+															"key" : ["DR_OZNAKA"]
+														},
+														
+														{
+															"codeTable" : "NASELJENO_MESTO",
+															"labelTable" : "NaseljenoMesto",
+															"key" : ["DR_OZNAKA"]
+														},
+														
+														{
+															"codeTable" : "OPSTINA",
+															"labelTable" : "Opstina",
+															"key" : ["DR_OZNAKA"]
+														},
+														
+														{
+															"codeTable" : "STRUKTURA",
+															"labelTable" : "Struktura",
+															"key" : ["DR_OZNAKA", "DRZ_DR_OZNAKA"]
+														}
+													],
+													
+										"primaryKey":["DR_OZNAKA"]
+										},
+										
+										{
+										"label":"Opstina",
+										"code":"OPSTINA",
+										"fields":	[
+														{
+															"label":"DrzavaOpsCol",
+															"code":"DR_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":[{"DRZAVA":"DR_OZNAKA"},{"NASELJENO_MESTO":"DR_OZNAKA"}]
+														},
+														
+														{
+															"label":"OznakaOpsCol",
+															"code":"OP_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":null
+														},
+														
+														{
+															"label":"NazivOpsCol",
+															"code":"OP_NAZIV",
+															"type":"varchar(60)",
+															"mandatory":true,
+															"fk":null
+														},
+														
+														{
+															"label":"AdministrativnoSedisteOpsCol",
+															"code":"NM_OZNAKA",
+															"type":"int",
+															"mandatory": false,
+															"fk":[{"NASELJENO_MESTO":"NM_OZNAKA"}]
+														}
+													],
+										"children":[
+														{
+															"codeTable": "MESNE_ZAJEDNICE", 
+															"labelTable" : "MesneZajednice",
+															"key": ["DR_OZNAKA", "OP_OZNAKA"]
+														}
+													],
+										"primaryKey":["DR_OZNAKA", "OP_OZNAKA"]
+										},
+										
+										{
+										"label":"NaseljenoMesto",
+										"code":"NASELJENO_MESTO",
+										"fields":	[
+													{
+														"label":"DrzavaNMCol",
+														"code":"DR_OZNAKA",
+														"type":"char(3)",
+														"mandatory":true,
+														"fk":[{"DRZAVA":"DR_OZNAKA"}]
+													},
+													
+													{
+														"label":"OznakaNMCol",
+														"code":"NM_OZNAKA",
+														"type":"int",
+														"mandatory":true,
+														"fk":null
+													},
+													
+													{
+														"label":"NazivNMCol",
+														"code":"NM_NAZIV",
+														"type":"varchar(60)",
+														"mandatory":true,
+														"fk":null
+													},
+													
+													{
+														"label":"PTTOznakaNMCol",
+														"code":"NM_PTT_OZNAKA",
+														"type":"varchar(12)",
+														"mandatory":false,
+														"fk": null
+													}
+													],
+										"children":[],
+										"primaryKey":["DR_OZNAKA", "NM_OZNAKA"]
+										},
+										
+										{
+										"label":"TipRegiona",
+										"code":"TIP_REGIONA",
+										"fields":	[
+														{
+															"label":"OznakaTRCol",
+															"code":"TR_OZNAKA",
+															"type":"char(1)",
+															"mandatory":true,
+															"fk":null
+														},
+														
+														{
+															"label":"NazivTRCol",
+															"code":"TR_NAZIV",
+															"type":"varchar(30)",
+															"mandatory":true,
+															"fk":null
+														}
+													],
+													
+										"children":[
+														{
+															"codeTable" : "REGION",
+															"labelTable" : "Region",
+															"key" : ["TR_OZNAKA"]}
+														],
+										
+										"primaryKey":["TR_OZNAKA"]			
+										},
+										
+										{
+										"label":"Region",
+										"code":"REGION",
+										"fields":	[
+														{
+															"label":"TipRegCol",
+															"code":"TR_OZNAKA",
+															"type":"char(1)",
+															"mandatory":true,
+															"fk":[{"TIP_REGIONA":"TR_OZNAKA"}]
+														},
+														
+														{
+															"label":"OznakaRegCol",
+															"code":"REG_OZNAKA",
+															"type":"numeric(4,0)",
+															"mandatory":true,
+															"fk":null
+														},
+														
+														{
+															"label":"NazivRegCol",
+															"code":"REG_NAZIV",
+															"type":"varchar(80)",
+															"mandatory":true,
+															"fk":null
+														},
+														
+														{
+															"label":"MaticnaDrzavaRegCol",
+															"code":"DR_OZNAKA",
+															"type":"char(3)",
+															"mandatory":false,
+															"fk":[{"DRZAVA":"DR_OZNAKA"}]
+														},
+														
+														{
+															"label":"DrzavaSedistaRegCol",
+															"code":"NAS_DR_OZNAKA",
+															"type":"char(3)",
+															"mandatory":false,
+															"fk":[{"NASELJENO_MESTO":"DR_OZNAKA"}]
+														},
+														
+														{
+														"label":"MestoSedistaRegCol",
+														"code":"NM_OZNAKA",
+														"type":"int",
+														"mandatory": false,
+														"fk":[{"NASELJENO_MESTO":"NM_OZNAKA"}]
+														}
+													],
+										"children":[],
+										"primaryKey":["TR_OZNAKA", "REG_OZNAKA"]
+										},
+										
+										{
+										"label":"IstorijaUredjenja",
+										"code":"ISTORIJA_UREDJENJA",
+										"fields":	[
+														{
+															"label":"DrzavaIUCol",
+															"code":"DR_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":[{"DRZAVA":"DR_OZNAKA"}]
+														},
+														
+														{
+															"label":"BrojIUCol",
+															"code":"URE_BROJ",
+															"type":"numeric(2)",
+															"mandatory":true,
+															"fk":null
+														},
+														
+														{
+															"label":"DrzavnoUredjenjeIUCol",
+															"code":"DUR_OZNAKA",
+															"type":"char(1)",
+															"mandatory":true,
+															"fk":[{"DRZAVNO_UREDJENJE":"DUR_OZNAKA"}]
+														},
+														{
+															"label":"OdKadaIUCol",
+															"code":"URE_OD_KAD",
+															"type":"datetime",
+															"mandatory":true,
+															"fk":null
+														},
+														{
+															"label":"DoKadaIUCol",
+															"code":"URE_DO_KAD",
+															"type":"datetime",
+															"mandatory":false,
+															"fk":null
+														}
+													],
+										"children":[],
+										
+										"primaryKey":["DR_OZNAKA","URE_BROJ"]			
+										},
+										
+										{
+										"label":"DrzavnoUredjenje",
+										"code":"DRZAVNO_UREDJENJE",
+										"fields":	[
+														{
+															"label":"OznakaDUCol",
+															"code":"DUR_OZNAKA",
+															"type":"char(1)",
+															"mandatory":true,
+															"fk":null
+														},
+														
+														{
+															"label":"NazivDUCol",
+															"code":"DUR_NAZIV",
+															"type":"varchar(40)",
+															"mandatory":true,
+															"fk":null
+														}											
+													],
+										"children":[],
+										
+										"primaryKey":["DUR_OZNAKA"]			
+										},
+										
+										{
+										"label":"Struktura",
+										"code":"STRUKTURA",
+										"fields":	[
+														{
+															"label":"SlozenaDrzavaStrCol",
+															"code":"DRZ_DR_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":[{"DRZAVA":"DR_OZNAKA"}]
+														},
+														
+														{
+															"label":"DrzavaUSastavuStrCol",
+															"code":"DR_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":[{"DRZAVA":"DR_OZNAKA"}]
+														},
+														
+														{
+															"label":"BrojStrCol",
+															"code":"DS_BROJ",
+															"type":"numeric(2,0)",
+															"mandatory":true,
+															"fk":null
+														},
+														{
+															"label":"OdStrCol",
+															"code":"DS_OD",
+															"type":"datetime",
+															"mandatory":false,
+															"fk":null
+														},
+														{
+															"label":"DoStrCol",
+															"code":"DS_DO",
+															"type":"datetime",
+															"mandatory":false,
+															"fk":null
+														}
+													],
+										"children":[],
+										
+										"primaryKey":["DRZ_DR_OZNAKA","DR_OZNAKA","DS_BROJ"]			
+										},
+										
+										{
+										"label":"MesneZajednice",
+										"code":"MESNE_ZAJEDNICE",
+										"fields":	[
+														{
+															"label":"DrzavaMZCol",
+															"code":"DR_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":[{"NASELJENO_MESTO":"DR_OZNAKA"},{"OPSTINA":"DR_OZNAKA"}]
+														},
+														{
+															"label":"OpstinaMZCol",
+															"code":"OP_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":[{"OPSTINA":"OP_OZNAKA"}]
+														},
+														
+														{
+															"label":"OznakaMZCol",
+															"code":"MZ_OZNAKA",
+															"type":"numeric(2,0)",
+															"mandatory":true,
+															"fk": null
+														},
+														{
+															"label":"NazivMZCol",
+															"code":"MZ_NAZIV",
+															"type":"varchar(120)",
+															"mandatory":true,
+															"fk":null
+														},
+														{
+															"label":"KancelarijaUMestuMZCol",
+															"code":"NM_OZNAKA",
+															"type":"int",
+															"mandatory":false,
+															"fk":[{"NASELJENO_MESTO":"NM_OZNAKA"}]
+														}
+													],
+										"children":[],
+										"primaryKey":["DR_OZNAKA","OP_OZNAKA","MZ_OZNAKA"]			
+										},
+										
+										{
+										"label":"SastavLokala",
+										"code":"SASTAV_LOKALA",
+										"fields":	[
+														{
+															"label":"DrzavaSLCol",
+															"code":"DR_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":[{"OPSTINA" : "DR_OZNAKA"}, {"NASELJENO_MESTO":"DR_OZNAKA"}]
+															
+														},
+														
+														{
+															"label":"OpstinaSLCol",
+															"code":"OP_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":[{"OPSTINA" : "OP_OZNAKA"}]
+														},
+														
+														{
+															"label":"NaseljenoMestoSLCol",
+															"code":"NM_OZNAKA",
+															"type":"int",
+															"mandatory":true,
+															"fk":[{"NASELJENO_MESTO" : "NM_OZNAKA"}]
+														}											
+													],
+										"children":[],
+										
+										"primaryKey":["DR_OZNAKA", "OP_OZNAKA", "NM_OZNAKA"]			
+										},
+								
+										{
+										"label":"ObuhvataNaselja",
+										"code":"OBUHVATA_NASELJA",
+										"fields":	[
+														{
+															"label":"Oznaka4ONCol",
+															"code":"DR_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":[{"MESNE_ZAJEDNICE" : "DR_OZNAKA"}]
+															
+														},
+														{
+															"label":"Oznaka3ONCol",
+															"code":"OP_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":[{"MESNE_ZAJEDNICE" : "OP_OZNAKA"}]
+														},
+														{
+															"label":"OznakaONCol",
+															"code":"MZ_OZNAKA",
+															"type":"numeric(2,0)",
+															"mandatory":true,
+															"fk":[{"MESNE_ZAJEDNICE" : "MZ_OZNAKA"}]
+														},
+														{
+															"label":"Nas_Oznaka2ONCol",
+															"code":"NAS_DR_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":[{"NASELJENO_MESTO" : "DR_OZNAKA"}]
+														},	
+														{
+															"label":"Oznaka2ONCol",
+															"code":"NM_OZNAKA",
+															"type":"int",
+															"mandatory":true,
+															"fk":[{"NASELJENO_MESTO" : "NM_OZNAKA"}]
+														}
+													],
+										"children":[],
+										
+										"primaryKey":["DR_OZNAKA", "OP_OZNAKA", "MZ_OZNAKA", "NAS_DR_OZNAKA", "NM_OZNAKA"]			
+										},
+										
+										{
+										"label":"OpstineURegionu",
+										"code":"OPSTINE_U_REGIONU",
+										"fields":	[
+														{
+															"label":"TipRegionaOURCol",
+															"code":"TR_OZNAKA",
+															"type":"char(1)",
+															"mandatory":true,
+															"fk":[{"REGION" : "TR_OZNAKA"}]
+															
+														},
+														{
+															"label":"RegionOURCol",
+															"code":"REG_OZNAKA",
+															"type":"numeric(2,0)",
+															"mandatory":true,
+															"fk":[{"REGION" : "REG_OZNAKA"}]
+														},
+														{
+															"label":"DrzavaOURCol",
+															"code":"DR_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":[{"OPSTINA" : "DR_OZNAKA"}]
+														},
+														{
+															"label":"OpstinaOURCol",
+															"code":"OP_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":[{"OPSTINA" : "OP_OZNAKA"}]
+														}
+													],
+										"children":[],
+										
+										"primaryKey":["TR_OZNAKA", "REG_OZNAKA", "DR_OZNAKA", "OP_OZNAKA"]			
+										},
+										
+										{
+										"label":"StrukturaNaselja",
+										"code":"STRUKTURA_NASELJA",
+										"fields":	[
+														{
+															"label":"DrzavaSNCol",
+															"code":"DR_OZNAKA",
+															"type":"char(3)",
+															"mandatory":true,
+															"fk":[{"NASELJENO_MESTO" : "DR_OZNAKA"}]
+															
+														},
+														{
+															"label":"SlozenoNaseljeSNCol",
+															"code":"NM_OZNAKA",
+															"type":"int",
+															"mandatory":true,
+															"fk":[{"NASELJENO_MESTO" : "MM_OZNAKA"}]
+														},
+														{
+															"label":"NaseljeDeoSNCol",
+															"code":"NAS_NM_OZNAKA",
+															"type":"int",
+															"mandatory":true,
+															"fk":[{"NASELJENO_MESTO" : "NM_OZNAKA"}]
+														}
+													],
+										"children":[],
+										
+										"primaryKey":["DR_OZNAKA", "NM_OZNAKA", "NAS_NM_OZNAKA"]			
+										},
+										
+										{
+										"label":"StrukturaRegiona",
+										"code":"STRUKTURA_REGIONA",
+										"fields":	[
+														{
+															"label":"TipSlozenogSRCol",
+															"code":"REG_TR_OZNAKA",
+															"type":"char(1)",
+															"mandatory":true,
+															"fk":[{"REGION" : "TR_OZNAKA"}]
+															
+														},
+														{
+															"label":"OznakaSlozenogSRCol",
+															"code":"REG_REG_OZNAKA",
+															"type":"numeric(4,0)",
+															"mandatory":true,
+															"fk":[{"REGION" : "REG_OZNAKA"}]
+														},
+														{
+															"label":"TipRegionaUSastavuSRCol",
+															"code":"TR_OZNAKA",
+															"type":"char(1)",
+															"mandatory":true,
+															"fk":[{"REGION" : "TR_OZNAKA"}]
+														},
+														{
+															"label":"RegionUSastavuSRCol",
+															"code":"REG_OZNAKA",
+															"type":"numeric(4,0)",
+															"mandatory":true,
+															"fk":[{"REGION" : "REG_OZNAKA"}]
+														}
+													],
+										"children":[],
+										
+										"primaryKey":["REG_TR_OZNAKA", "REG_REG_OZNAKA", "TR_OZNAKA", "REG_OZNAKA"]			
+										}
+										]
+							}
+						}
+					]
+				}
+				}
+		]
+	}
+}

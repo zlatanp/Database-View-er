@@ -1,0 +1,40 @@
+package gui;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+import javax.swing.JFormattedTextField.AbstractFormatter;
+
+/**
+ * Pomocna klasa koja sluzi za formatiranje vremena i datuma prema odredjenom paternu.
+ * 
+ * @author Jasmina
+ *
+ */
+public class DateLabelFormatter extends AbstractFormatter {
+
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 5885798846058266449L;
+	
+	private String datePattern = "dd-MM-yyyy";
+    private SimpleDateFormat dateFormatter = new SimpleDateFormat(datePattern);
+
+    @Override
+    public Object stringToValue(String text) throws ParseException {
+        return dateFormatter.parseObject(text);
+    }
+
+    @Override
+    public String valueToString(Object value) throws ParseException {
+        if (value != null) {
+            Calendar cal = (Calendar) value;
+            return dateFormatter.format(cal.getTime());
+        }
+
+        return "";
+    }
+
+}

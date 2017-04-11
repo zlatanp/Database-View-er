@@ -1,0 +1,161 @@
+package actions;
+
+import java.awt.event.ActionEvent;
+
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+
+import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
+
+import javax.swing.JOptionPane;
+
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.KeyStroke;
+import javax.swing.table.DefaultTableModel;
+
+import gui.MainFrame;
+import model.TableModel1;
+import model.TableRowModel;
+import view.TableView1;
+import view.WorkspaceView;
+
+/**
+ * Klasa koja predstavlja brisanje selektovanog reda iz roditeljske tabele.
+ * 
+ * @author Zlatan
+ *
+ */
+
+public class DeleteRowAction extends AbstractAction {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6011928664033004934L;
+
+	private TableView1 tableView = null;
+	private TableModel1 tableSelectedModel = null;
+
+	public DeleteRowAction() {
+		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.ALT_MASK));
+		putValue(MNEMONIC_KEY, KeyEvent.VK_R);
+		putValue(SMALL_ICON, new ImageIcon("images/parentToolBar/delete_table.png"));
+		putValue(NAME, MainFrame.getInstance().getResourceBundle().getString("Delete"));
+		putValue(SHORT_DESCRIPTION, MainFrame.getInstance().getResourceBundle().getString("Delete"));
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+
+		WorkspaceView workspaceView = MainFrame.getInstance().getWorkspaceView();
+		JTabbedPane tabbedParentView = workspaceView.getTabbedParentView();
+		int selectedIndex = tabbedParentView.getSelectedIndex();
+
+		String tabName = tabbedParentView.getTitleAt(selectedIndex);
+
+		ArrayList<TableModel1> tableParentModels = workspaceView.getTemp();
+
+		// pronadji model onog taba koji je selektovan
+		for (int i = 0; i < tableParentModels.size(); i++) {
+			if (tabName.equals(tableParentModels.get(i).getLabel())) {
+				tableSelectedModel = tableParentModels.get(i);
+				break;
+			}
+		}
+
+		// pronadji view onog modela koji je selektovan
+		ArrayList<TableView1> tableViewList = workspaceView.getTableViewList();
+		for (int i = 0; i < tableViewList.size(); i++) {
+			if (tableViewList.get(i).getTableModel().equals(tableSelectedModel)) {
+				tableView = tableViewList.get(i);
+				break;
+			}
+		}
+
+		JTable tabela = tableView.getTabela();
+
+		if (tabela.getSelectedRowCount() == 0) {
+			JOptionPane.showMessageDialog(MainFrame.getInstance(),
+					MainFrame.getInstance().getResourceBundle().getString("PorukaDeleteNemaSelektovanog"),
+					MainFrame.getInstance().getResourceBundle().getString("PorukaDeleteNaslovGreska"),
+					JOptionPane.ERROR_MESSAGE);
+		} else {
+			int code = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+					MainFrame.getInstance().getResourceBundle().getString("PitanjeDelete"),
+					MainFrame.getInstance().getResourceBundle().getString("PorukaDeleteNaslovUspeh"),
+					JOptionPane.YES_NO_OPTION);
+			if (code == JOptionPane.YES_OPTION) {
+				int selectedRow = tabela.getSelectedRow();
+				TableRowModel selectedRowModel = selectedRowToTableRowModel(tabela, selectedRow);
+				if (selectedRowModel != null) {
+					TableRowModel forDelete = prepareForRemove(selectedRowModel, tableSelectedModel);
+					boolean flag = MainFrame.getInstance().getDbDataHandler().delete(tableSelectedModel, forDelete);
+					if (!flag) {
+						JOptionPane.showMessageDialog(MainFrame.getInstance(),
+								MainFrame.getInstance().getResourceBundle().getString("PorukaDeleteNeuspeh"),
+								MainFrame.getInstance().getResourceBundle().getString("PorukaDeleteNaslovGreska"),
+								JOptionPane.ERROR_MESSAGE);
+
+					} else {
+						JOptionPane.showMessageDialog(MainFrame.getInstance(),
+								MainFrame.getInstance().getResourceBundle().getString("PorukaDeleteUspeh"),
+								MainFrame.getInstance().getResourceBundle().getString("PorukaDeleteNaslovUspeh"),
+								JOptionPane.INFORMATION_MESSAGE);
+						((DefaultTableModel) tabela.getModel()).removeRow(selectedRow);
+						((DefaultTableModel) tabela.getModel()).fireTableDataChanged();
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Pomocna metoda koja iz prosledjenog reda brise sva obelezja koja nisu
+	 * kljucna za datu tabelu zbog delete naredbe.
+	 * 
+	 * @param rowModel
+	 *            - {@link TableRowModel red} koji sadrzi i nekljucne vrednosti
+	 * @param tableModel
+	 *            - {@link TableModel1 tabela} ciji se red brise
+	 * @return - {@link TableRowModel red} koji sadrzi samo kljucne vrednosti
+	 */
+	private TableRowModel prepareForRemove(TableRowModel rowModel, TableModel1 tableModel) {
+		TableRowModel prepared = new TableRowModel();
+		for (String keyName : tableModel.getKeyNames()) {
+			if (rowModel.getFieldNames().contains(keyName)) {
+				prepared.addPair(keyName, rowModel.getValue(keyName));
+			}
+		}
+
+		return prepared;
+	}
+
+	/**
+	 * Pomocna metoda koja selektovani red iz tabele prebacuje u
+	 * {@link TableRowModel model}.
+	 * 
+	 * @param table
+	 *            - {@link JTable tabela} ciji se selektovan element trazi
+	 * @param selectedRow
+	 *            - broj selektovanog reda
+	 * @return -{@link TableRowModel model} selektovanog reda {@link JTable
+	 *         tabele}
+	 */
+	public TableRowModel selectedRowToTableRowModel(JTable table, int selectedRow) {
+		TableRowModel selectedRowModel = new TableRowModel();
+		String val = "";
+		int numCol = table.getColumnCount();
+
+		for (int i = 0; i < numCol; i++) {
+			if (table.getValueAt(selectedRow, i) != null) {
+				val = (String) table.getValueAt(selectedRow, i);
+				selectedRowModel.addPair(table.getColumnName(i), val);
+			}
+		}
+
+		return selectedRowModel;
+	}
+
+}

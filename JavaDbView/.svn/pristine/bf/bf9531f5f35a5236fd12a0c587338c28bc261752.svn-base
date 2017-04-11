@@ -1,0 +1,154 @@
+package gui;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
+
+import actions.ActionManager;
+import listeners.UnderConcstructionListener;
+
+/**
+ * Klasa koja predstavlja tulbar - služi za prikazivanje najčešće korišćenih radnji i kontrola.
+ * 
+ * @author Zlatan
+ * */
+
+public class Toolbar extends JToolBar {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4567348379398543954L;
+	
+	
+	private JButton button1 = null;
+	private JButton button2 = null;
+	private JButton button3 = null;
+	private JButton button5 = null;
+	private JButton button6 = null;
+	private JButton button7 = null;
+	private JButton button8 = null;
+	private JButton button9 = null;
+	private JButton button10 = null;
+	private JButton button11 = null;
+	private JButton button12 = null;
+	private JButton button13 = null;
+	private JButton button14 = null;
+	private JButton button15 = null;
+	private JButton button17 = null;
+
+	private ActionManager actionManager = MainFrame.getInstance().getActionManager();
+
+	public Toolbar() {
+		super(SwingConstants.HORIZONTAL);
+		setFloatable(false);
+
+		button1 = new JButton();
+		button1.setIcon(new ImageIcon("images/import_table.png"));
+		add(button1);
+		button1.addActionListener(new UnderConcstructionListener());
+
+		// ikonica: zeleni plus
+		button2 = new JButton();
+		button2.setIcon(new ImageIcon("images/add.png"));
+		add(button2);
+		button2.addActionListener(new UnderConcstructionListener());
+
+		// ikonica: crveni minus
+		button3 = new JButton();
+		button3.setIcon(new ImageIcon("images/delete.png"));
+		add(button3);
+		button3.addActionListener(new UnderConcstructionListener());
+
+		addSeparator();
+
+		// ikonica: tree
+		// button4 = new JButton();
+		// button4.setIcon(new ImageIcon("images/tree.png"));
+		add(actionManager.getReadSchema());
+		// button4.addActionListener(new UnderConcstructionListener());
+
+		// ikonica: kuca
+		button5 = new JButton();
+		button5.setIcon(new ImageIcon("images/workspace.png"));
+		add(button5);
+		button5.addActionListener(new UnderConcstructionListener());
+
+		addSeparator();
+
+		// ikonica: dvostruka leva srelica
+		button6 = new JButton();
+		button6.setIcon(new ImageIcon("images/gotobegin.png"));
+		add(button6);
+		button6.addActionListener(new UnderConcstructionListener());
+
+		// ikonica: jedna strelica levo
+		button7 = new JButton();
+		button7.setIcon(new ImageIcon("images/goOneLeft.png"));
+		add(button7);
+		button7.addActionListener(new UnderConcstructionListener());
+
+		// ikonica: jedna strelica desno
+		button8 = new JButton();
+		button8.setIcon(new ImageIcon("images/goOneRight.png"));
+		add(button8);
+		button8.addActionListener(new UnderConcstructionListener());
+
+		// ikonica: dve strelice desno
+		button9 = new JButton();
+		button9.setIcon(new ImageIcon("images/gotoEnd.png"));
+		add(button9);
+		button9.addActionListener(new UnderConcstructionListener());
+
+		// ikonica: crveni iks
+		button10 = new JButton();
+		button10.setIcon(new ImageIcon("images/close.png"));
+		add(button10);
+		button10.addActionListener(new UnderConcstructionListener());
+
+		// ikonica: crveni krst zaokruzen
+		button11 = new JButton();
+		button11.setIcon(new ImageIcon("images/close1.png"));
+		add(button11);
+		button11.addActionListener(new UnderConcstructionListener());
+
+		addSeparator();
+
+		// ikonica: Backward
+		button12 = new JButton();
+		button12.setIcon(new ImageIcon("images/backward.png"));
+		add(button12);
+		button12.addActionListener(new UnderConcstructionListener());
+
+		// ikonica: LeftCircular
+		button13 = new JButton();
+		button13.setIcon(new ImageIcon("images/leftCircular.png"));
+		add(button13);
+		button13.addActionListener(new UnderConcstructionListener());
+
+		// ikonica: RightCircular
+		button14 = new JButton();
+		button14.setIcon(new ImageIcon("images/rightCircular.png"));
+		add(button14);
+		button14.addActionListener(new UnderConcstructionListener());
+
+		// ikonica: Forward
+		button15 = new JButton();
+		button15.setIcon(new ImageIcon("images/forward.png"));
+		add(button15);
+		button15.addActionListener(new UnderConcstructionListener());
+
+		addSeparator();
+
+		// ikonica: help
+		add(MainFrame.getInstance().getActionManager().getAboutAction());
+
+		// USERS
+		button17 = new JButton();
+		button17.setIcon(new ImageIcon("images/users.png"));
+		add(button17);
+		button17.addActionListener(new UnderConcstructionListener());
+
+	}
+}

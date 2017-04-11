@@ -1,0 +1,27 @@
+package contoller;
+
+import java.util.HashMap;
+
+import model.TableModel1;
+
+public interface IUpdateable {
+
+	/**
+	 * 
+	 * Metoda koja reaguje na promenu selekcije u stablu. Implementira se u klasi
+	 * WorkspaceView koja treba da odreaguje. Salje se tabela koja je
+	 * kliknuta-> ide u parent deo(gore) i decu te tabele -> ide u deo
+	 * child(dole)
+	 * 
+	 * Stavljen osluskivac na stablo i taj osluskivac raguje na to.
+	 * 
+	 */
+
+	public void updateForTreeChange(TableModel1 table, HashMap<String, TableModel1> children);
+
+	public void updateForTopTabChanged(TableModel1 parentTable);
+
+	public void updateForBottomTabChanged(TableModel1 childTable);
+
+	public void izmeniPrikazDece(TableModel1 parentTable);
+}

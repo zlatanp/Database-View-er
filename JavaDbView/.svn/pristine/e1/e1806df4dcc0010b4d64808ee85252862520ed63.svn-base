@@ -1,0 +1,47 @@
+package actions;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
+import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
+
+import gui.MainFrame;
+import gui.SearchDialog;
+import view.TableView1;
+import view.WorkspaceView;
+
+/**
+ * @author Zlatan
+ *
+ */
+
+public class FilterChildTable extends AbstractAction {
+
+	private static final long serialVersionUID = -5708773383122922550L;
+
+	public FilterChildTable() {
+		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+		putValue(MNEMONIC_KEY, KeyEvent.VK_S);
+		putValue(SMALL_ICON, new ImageIcon("images/childToolBar/search.png"));
+		putValue(NAME, MainFrame.getInstance().getResourceBundle().getString("Search"));
+		putValue(SHORT_DESCRIPTION, MainFrame.getInstance().getResourceBundle().getString("Search"));
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+
+		WorkspaceView workspaceView = MainFrame.getInstance().getWorkspaceView();
+		JTabbedPane tabbedChildView = workspaceView.getTabbedChildView();
+
+		int selectedIndex = tabbedChildView.getSelectedIndex();
+
+		TableView1 viewChild = (TableView1) tabbedChildView.getComponent(selectedIndex);
+
+		SearchDialog searchDijalog = new SearchDialog(viewChild);
+		searchDijalog.setVisible(true);
+	}
+
+}

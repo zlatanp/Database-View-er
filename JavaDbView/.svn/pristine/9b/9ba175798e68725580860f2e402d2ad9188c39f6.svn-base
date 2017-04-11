@@ -1,0 +1,203 @@
+package gui;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+
+/**
+ * Klasa koja predstavlja pocetni dijalog za logovanje korisnika.
+ * 
+ * @author Jasmina
+ *
+ */
+public class NoviLoginDijalog extends JDialog{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6198557533907268078L;
+
+	/**
+	 * Konekcija ka bazi podataka koja se dobija iz {@link gui.MainFrame
+	 * MainFrame} klase.
+	 */
+	private Connection dbConnection;
+
+	/**
+	 * {@link java.lang.String String} vrednost upita za bazu.
+	 */
+	private String sqlQuery;
+
+	/**
+	 * {@link java.sql.PreparedStatement PreparedStatement} instanca koja sluzi
+	 * za pokretanje upita nad bazom podataka, i izbegavanje SQL Injection-a.
+	 */
+	private PreparedStatement pst;
+	
+	/**
+	 * Labela za username
+	 */
+	//private final JLabel jlblUsername = new JLabel(MainFrame.getInstance().getResourceBundle().getString("Username")+":");
+	private  final JLabel jlblUsername = new JLabel("Korisničko ime:");
+	/**
+	 * Labela za password
+	 */
+    private final JLabel jlblPassword = new JLabel(MainFrame.getInstance().getResourceBundle().getString("Password")+":");
+    
+    
+	/**
+     * Polje unosa za username
+     */
+    private final JTextField jtfUsername = new JTextField(18);
+    /**
+     * Polje unosa za password
+     */
+    private final JPasswordField jpfPassword = new JPasswordField(16);
+    
+    
+	 /**
+     * Dugme za login
+     */
+    private final JButton jbtOk = new JButton(MainFrame.getInstance().getResourceBundle().getString("Login"));
+    
+    /**
+     * Dugme za odustajanje od ulaza u aplikaciju
+     */
+    private final JButton jbtCancel = new JButton(MainFrame.getInstance().getResourceBundle().getString("Otkazi"));
+    
+	 /**
+     * Labela za status
+     */
+	private final JLabel jlblStatus = new JLabel(" ");
+	
+	public NoviLoginDijalog() {
+		this(null, true);
+	}
+	
+	public NoviLoginDijalog(final JFrame parent, boolean modal){
+		super(parent, true);
+		
+		
+		this.setTitle(MainFrame.getInstance().getResourceBundle().getString("Login"));
+		this.dbConnection = MainFrame.getConnection();
+		this.sqlQuery = "SELECT REG_USER_NAME, REG_LOZINKA FROM REGISTROVANI_KORISNICI WHERE REG_USER_NAME = ? AND REG_LOZINKA = ?";
+		
+		jtfUsername.setDocument(new LoginInputField(12));
+		jlblUsername.setLabelFor(jtfUsername);
+		
+		JPanel panelUsername = new JPanel();
+		panelUsername.add(jlblUsername);
+		panelUsername.add(jtfUsername);
+		
+	
+		jpfPassword.setDocument(new LoginInputField(120));
+		jlblPassword.setLabelFor(jpfPassword);
+		
+		JPanel panelPass = new JPanel();
+		panelPass.add(jlblPassword);
+		panelPass.add(jpfPassword);
+		
+		JPanel kredencijali = new JPanel();
+		kredencijali.add(panelUsername);
+		kredencijali.add(panelPass);
+		
+		JPanel dugmad = new JPanel();
+		dugmad.add(jbtOk);
+		dugmad.add(jbtCancel);
+		
+		jlblStatus.setForeground(Color.RED);
+        jlblStatus.setHorizontalAlignment(SwingConstants.CENTER);
+        jlblStatus.setPreferredSize(new Dimension(200, 20));
+        
+        
+		JPanel sve = new JPanel(new BorderLayout());
+		sve.add(jlblStatus, BorderLayout.NORTH);
+		sve.add(kredencijali, BorderLayout.CENTER);
+		sve.add(dugmad, BorderLayout.SOUTH);
+		
+		
+		setLayout(new BorderLayout());
+		add(sve, BorderLayout.CENTER);
+		
+		this.setSize(370, 200);
+	    setLocationRelativeTo(null);
+	    setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		
+	    /**
+         * Osluskivac za izlazak iz prozora za logovanje
+         */
+	    addWindowListener(new WindowAdapter() {
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				parent.dispose();
+                System.exit(0);
+			}
+	    	
+		});
+	    
+	    
+	    /**
+         * Osluskivac za pokusaj logovanja za dugme za logovanje 
+         */
+	    jbtOk.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ResultSet result;
+				
+				try{
+					pst = dbConnection.prepareStatement(sqlQuery);
+					String passText = new String(jpfPassword.getPassword());
+					String userText = new String(jtfUsername.getText());
+					pst.setString(1, userText);
+					pst.setString(2, passText);
+					result = pst.executeQuery();
+					if (!result.isBeforeFirst()) {    
+						jlblStatus.setText("Uneti kredencijali nisu ispravni!"); 
+					} else {
+						 parent.setVisible(true);
+		                 setVisible(false);
+					}
+				} catch (SQLException exc){
+					DialogUpozorenje upozorenje = new DialogUpozorenje(exc.getMessage());
+					upozorenje.setVisible(true);
+				}
+				
+			}
+		});
+	    
+	    
+	    /**
+         * Osluskivac za odustajanje od logovanja u aplikaciju
+         */
+        jbtCancel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setVisible(false);
+                parent.dispose();
+                System.exit(0);
+            }
+        });
+		
+	}
+	
+	
+}

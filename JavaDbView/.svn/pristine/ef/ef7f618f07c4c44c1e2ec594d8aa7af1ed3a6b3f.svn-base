@@ -1,0 +1,58 @@
+package tree;
+
+import java.util.Enumeration;
+
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.tree.DefaultMutableTreeNode;
+
+import contoller.ILocalization;
+import gui.MainFrame;
+import listeners.MyTreeSelectionListener;
+import tree.components.PackageComponent;
+import tree.components.ProjectComponent;
+import tree.components.TableComponent;
+
+/**
+ * Klasa koja predstavlja stablo.
+ * 
+ * @author Jasmina
+ *
+ */
+public class WorkspaceTree extends JTree implements ILocalization {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8167391442599912768L;
+
+	public WorkspaceTree() {
+		super();
+		setCellRenderer(new WorkspaceTreeCellRenderer());
+		addTreeSelectionListener(new MyTreeSelectionListener());
+		setEditable(false);
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void translate() {
+		DefaultMutableTreeNode root, node;
+		Enumeration en;
+
+		root = (DefaultMutableTreeNode) MainFrame.getInstance().getTree().getModel().getRoot();
+		en = root.depthFirstEnumeration();
+		while (en.hasMoreElements()) {
+			node = (DefaultMutableTreeNode) en.nextElement();
+			if (node instanceof ProjectComponent) {
+				((ProjectComponent) node).translate();
+			}
+			if (node instanceof PackageComponent) {
+				((PackageComponent) node).translate();
+			}
+			if (node instanceof TableComponent) {
+				((TableComponent) node).translate();
+			}
+		}
+		SwingUtilities.updateComponentTreeUI(this);
+
+	}
+}

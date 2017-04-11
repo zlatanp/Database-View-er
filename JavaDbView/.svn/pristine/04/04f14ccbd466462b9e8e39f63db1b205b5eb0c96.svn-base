@@ -1,0 +1,15 @@
+eclipse.preferences.version=1
+encoding//resources/stari.json=UTF-8
+encoding//src/actions/ActionManager.java=UTF-8
+encoding//src/actions/ReadFromSQLServerAction.java=UTF-8
+encoding//src/data/reader/JSONDataReader.java=UTF-8
+encoding//src/data/reader/SQLServerDataReader.java=UTF-8
+encoding//src/gui/AddDialog.java=UTF-8
+encoding//src/gui/MessageResources/MessageResources_sr_RS.properties=UTF-8
+encoding//src/gui/NoviLoginDijalog.java=UTF-8
+encoding//src/gui/ToolBarChild.java=UTF-8
+encoding//src/gui/ToolBarParent.java=UTF-8
+encoding//src/gui/Toolbar.java=UTF-8
+encoding//src/listeners/OpenSmallTableListener.java=UTF-8
+encoding//src/listeners/UnderConcstructionListener.java=UTF-8
+encoding//src/validation/ValidateForm.java=UTF-8
